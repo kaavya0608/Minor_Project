@@ -1,0 +1,1443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SmartBin · Digital Twin</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Exo+2:wght@300;400;600;800&display=swap" rel="stylesheet"/>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  :root {
+    --bg:       #060810;
+    --bg2:      #0c1020;
+    --bg3:      #111827;
+    --panel:    rgba(16,24,40,0.85);
+    --border:   rgba(99,202,255,0.12);
+    --accent:   #00e5ff;
+    --accent2:  #00ff9d;
+    --accent3:  #ff6b35;
+    --warn:     #ffcc00;
+    --danger:   #ff3355;
+    --text:     #e2f0ff;
+    --muted:    #5a7a9a;
+    --glow:     0 0 20px rgba(0,229,255,0.25);
+    --glow2:    0 0 40px rgba(0,229,255,0.15);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Exo 2', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Animated grid background ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+    pointer-events: none;
+    z-index: 0;
+  }
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0,229,255,0.07), transparent);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── HEADER ── */
+  header {
+    position: relative; z-index: 10;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 36px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(6,8,16,0.9);
+    backdrop-filter: blur(20px);
+  }
+  .logo {
+    display: flex; align-items: center; gap: 14px;
+  }
+  .logo-icon {
+    width: 40px; height: 40px;
+    border: 2px solid var(--accent);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: var(--glow);
+    font-size: 20px;
+  }
+  .logo-text h1 {
+    font-size: 20px; font-weight: 800; letter-spacing: 2px;
+    color: var(--accent);
+    text-shadow: 0 0 20px rgba(0,229,255,0.5);
+  }
+  .logo-text span {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px; color: var(--muted); letter-spacing: 3px;
+  }
+  .header-right {
+    display: flex; align-items: center; gap: 20px;
+  }
+  .live-badge {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 14px;
+    border: 1px solid rgba(0,255,157,0.3);
+    border-radius: 20px;
+    background: rgba(0,255,157,0.05);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px; color: var(--accent2);
+    letter-spacing: 2px;
+  }
+  .live-dot {
+    width: 7px; height: 7px;
+    background: var(--accent2);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--accent2);
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+  .conn-status {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px; color: var(--muted);
+    letter-spacing: 1px;
+  }
+  .conn-status.connected { color: var(--accent2); }
+  .conn-status.error { color: var(--danger); }
+
+  /* ── MAIN LAYOUT ── */
+  main {
+    position: relative; z-index: 1;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 30px 24px 60px;
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 20px;
+  }
+
+  /* ── PANEL ── */
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    backdrop-filter: blur(20px);
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  .panel:hover {
+    border-color: rgba(0,229,255,0.25);
+    box-shadow: var(--glow2);
+  }
+  .panel::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0.4;
+  }
+  .panel-title {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px; letter-spacing: 3px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .panel-title::before {
+    content: '';
+    width: 12px; height: 1px;
+    background: var(--accent);
+    box-shadow: 0 0 6px var(--accent);
+  }
+
+  /* ── DIGITAL TWIN BIN ── */
+  .bin-panel {
+    grid-column: 1;
+    grid-row: 1 / 3;
+    display: flex; flex-direction: column; align-items: center;
+    gap: 24px;
+  }
+  .bin-container {
+    position: relative;
+    width: 160px;
+  }
+  .bin-3d {
+    position: relative;
+    width: 160px;
+    height: 220px;
+    margin: 0 auto;
+  }
+  /* Bin body */
+  .bin-body {
+    position: absolute;
+    bottom: 0; left: 10px; right: 10px;
+    height: 200px;
+    border: 2px solid var(--accent);
+    border-top: none;
+    border-radius: 0 0 20px 20px;
+    background: rgba(0,229,255,0.03);
+    overflow: hidden;
+    box-shadow: var(--glow), inset 0 0 30px rgba(0,229,255,0.05);
+  }
+  /* Fill level */
+  .bin-fill {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    transition: height 1.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    background: linear-gradient(to top, var(--fill-color, var(--accent2)), rgba(0,229,255,0.2));
+    box-shadow: 0 -4px 20px var(--fill-color, var(--accent2));
+  }
+  .bin-fill::after {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 4px;
+    background: white;
+    opacity: 0.4;
+    animation: wave 2s ease-in-out infinite;
+  }
+  @keyframes wave {
+    0%, 100% { transform: scaleX(1) translateX(0); opacity: 0.4; }
+    50% { transform: scaleX(0.95) translateX(2%); opacity: 0.6; }
+  }
+  /* Percentage markers */
+  .bin-markers {
+    position: absolute;
+    top: 0; bottom: 0; right: -28px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    padding: 0;
+  }
+  .bin-marker {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px; color: var(--muted);
+    display: flex; align-items: center; gap: 4px;
+  }
+  .bin-marker::before {
+    content: '';
+    width: 6px; height: 1px;
+    background: var(--muted);
+  }
+  /* Bin lid */
+  .bin-lid {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 22px;
+    border: 2px solid var(--accent);
+    border-radius: 4px;
+    background: rgba(0,229,255,0.08);
+    box-shadow: var(--glow);
+  }
+  .bin-lid::after {
+    content: '';
+    position: absolute;
+    top: -8px; left: 50%; transform: translateX(-50%);
+    width: 30px; height: 10px;
+    border: 2px solid var(--accent);
+    border-radius: 3px 3px 0 0;
+    background: rgba(0,229,255,0.08);
+  }
+  /* Side decorations */
+  .bin-side-lines {
+    position: absolute;
+    top: 30px; bottom: 20px; left: 18px;
+    width: 2px;
+    background: repeating-linear-gradient(to bottom,
+      rgba(0,229,255,0.15) 0px, rgba(0,229,255,0.15) 6px,
+      transparent 6px, transparent 14px);
+  }
+
+  /* ── BIG PERCENTAGE ── */
+  .big-percent {
+    text-align: center;
+  }
+  .big-percent .value {
+    font-size: 72px; font-weight: 800; line-height: 1;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 0 20px rgba(0,229,255,0.4));
+    transition: all 0.5s;
+  }
+  .big-percent .unit { font-size: 22px; color: var(--muted); }
+  .big-percent .label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px; letter-spacing: 3px; color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* ── STATUS BADGE ── */
+  .status-badge {
+    padding: 8px 24px;
+    border-radius: 30px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px; letter-spacing: 3px;
+    font-weight: 600;
+    border: 1px solid currentColor;
+    transition: all 0.5s;
+  }
+
+  /* ── STATS GRID (right top) ── */
+  .stats-panel {
+    grid-column: 2;
+    grid-row: 1;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .stat-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    backdrop-filter: blur(20px);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s;
+    cursor: default;
+  }
+  .stat-card:hover {
+    border-color: rgba(0,229,255,0.3);
+    transform: translateY(-3px);
+    box-shadow: var(--glow2);
+  }
+  .stat-card .s-icon {
+    font-size: 22px; margin-bottom: 10px;
+  }
+  .stat-card .s-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px; letter-spacing: 2px; color: var(--muted);
+    text-transform: uppercase;
+  }
+  .stat-card .s-value {
+    font-size: 28px; font-weight: 800;
+    margin: 6px 0 4px;
+    color: var(--accent);
+    font-family: 'Share Tech Mono', monospace;
+  }
+  .stat-card .s-sub {
+    font-size: 11px; color: var(--muted);
+  }
+  .stat-card::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--card-color, var(--accent)), transparent);
+    opacity: 0.5;
+  }
+
+  /* ── CHART PANEL ── */
+  .chart-panel {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .chart-wrap {
+    height: 200px;
+    position: relative;
+  }
+
+  /* ── BOTTOM ROW ── */
+  .bottom-row {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+  }
+
+  /* ── ALERT PANEL ── */
+  .alert-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 12px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    margin-bottom: 10px;
+    font-size: 13px;
+    animation: fadeIn 0.5s ease;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  .alert-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    margin-top: 4px; flex-shrink: 0;
+  }
+  .alert-time {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px; color: var(--muted);
+    margin-top: 3px;
+  }
+
+  /* ── GAUGE ARC ── */
+  .gauge-wrap {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 10px;
+  }
+  canvas#gaugeCanvas {
+    display: block;
+  }
+
+  /* ── RAW DATA TABLE ── */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+  }
+  .data-table th {
+    color: var(--muted);
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    letter-spacing: 2px;
+    font-size: 10px;
+    text-transform: uppercase;
+  }
+  .data-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    color: var(--text);
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: rgba(0,229,255,0.04); }
+  .tag {
+    display: inline-block;
+    padding: 2px 8px; border-radius: 4px;
+    font-size: 10px; letter-spacing: 1px;
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 2px; }
+
+  /* ── SCAN LINE ANIMATION ── */
+  @keyframes scanline {
+    0% { top: -5%; }
+    100% { top: 105%; }
+  }
+  .bin-body::before {
+    content: '';
+    position: absolute; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(0,229,255,0.4), transparent);
+    animation: scanline 3s linear infinite;
+    pointer-events: none;
+  }
+
+  /* ── TABS ── */
+  .tab-nav {
+    position: relative; z-index: 10;
+    display: flex; align-items: center; gap: 4px;
+    padding: 0 36px;
+    background: rgba(6,8,16,0.9);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(20px);
+  }
+  .tab-btn {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px; letter-spacing: 2px;
+    color: var(--muted);
+    background: none; border: none;
+    padding: 12px 20px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+  .tab-btn:hover { color: var(--accent); }
+  .tab-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    text-shadow: 0 0 10px rgba(0,229,255,0.5);
+  }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ── MAP TAB ── */
+  #mapTab {
+    display: none;
+    height: calc(100vh - 100px);
+    position: relative;
+  }
+  #mapTab.active { display: flex; }
+  #mapView {
+    flex: 1;
+    height: 100%;
+  }
+  .leaflet-container { background: #0d1829 !important; }
+
+  /* map sidebar */
+  #mapSidebar {
+    width: 310px;
+    background: rgba(6,8,16,0.97);
+    border-left: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    overflow: hidden; flex-shrink: 0;
+  }
+  .ms-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px; letter-spacing: 3px; color: var(--muted);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .ms-body { flex: 1; overflow-y: auto; padding: 16px; }
+  .ms-body::-webkit-scrollbar { width: 3px; }
+  .ms-body::-webkit-scrollbar-thumb { background: var(--border); }
+
+  /* stats bar */
+  .map-stats {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    border-bottom: 1px solid var(--border);
+  }
+  .map-stat {
+    padding: 10px 8px; text-align: center;
+    border-right: 1px solid var(--border);
+  }
+  .map-stat:last-child { border-right: none; }
+  .map-stat-num { font-family: 'Share Tech Mono', monospace; font-size: 20px; }
+  .map-stat-lbl { font-family: 'Share Tech Mono', monospace; font-size: 8px; letter-spacing: 1px; color: var(--muted); margin-top: 2px; }
+
+  /* empty state */
+  .map-empty {
+    text-align: center; color: var(--muted);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px; letter-spacing: 2px;
+    margin-top: 60px; line-height: 2.6;
+  }
+
+  /* bin detail card */
+  .mbin-hero { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .mbin-id { font-family: 'Share Tech Mono', monospace; font-size: 22px; letter-spacing: 4px; color: var(--accent); }
+  .mbin-pill {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 8px; letter-spacing: 2px;
+    padding: 4px 10px; border-radius: 2px; border: 1px solid;
+  }
+  .msec { font-family: 'Share Tech Mono', monospace; font-size: 8px; letter-spacing: 3px; color: var(--muted); margin: 14px 0 8px; }
+  .mfill-track { height: 5px; background: rgba(99,202,255,0.08); border: 1px solid var(--border); border-radius: 1px; overflow: hidden; margin-bottom: 4px; }
+  .mfill-fill { height: 100%; border-radius: 1px; transition: width 0.6s ease; }
+  .mfill-labels { display: flex; justify-content: space-between; font-family: 'Share Tech Mono', monospace; font-size: 8px; color: var(--muted); margin-bottom: 12px; }
+  .mm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 12px; }
+  .mm-card { background: rgba(12,16,32,0.8); border: 1px solid var(--border); border-radius: 6px; padding: 9px 11px; }
+  .mm-lbl { font-family: 'Share Tech Mono', monospace; font-size: 7px; letter-spacing: 2px; color: var(--muted); margin-bottom: 3px; }
+  .mm-val { font-family: 'Share Tech Mono', monospace; font-size: 18px; }
+  .mm-unit { font-size: 9px; color: var(--muted); }
+  .minfo-table { background: rgba(12,16,32,0.8); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; margin-bottom: 12px; }
+  .minfo-row { display: flex; justify-content: space-between; padding: 7px 12px; font-family: 'Share Tech Mono', monospace; font-size: 9px; border-bottom: 1px solid rgba(99,202,255,0.05); }
+  .minfo-row:last-child { border-bottom: none; }
+  .minfo-k { color: var(--muted); }
+  .malert-box { border-radius: 4px; padding: 10px 12px; font-family: 'Share Tech Mono', monospace; font-size: 8px; letter-spacing: 1px; line-height: 2; margin-bottom: 12px; border: 1px solid; }
+
+  /* zone list */
+  .zone-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 0; border-bottom: 1px solid rgba(99,202,255,0.05);
+    cursor: pointer; font-family: 'Share Tech Mono', monospace;
+    transition: padding-left 0.15s;
+  }
+  .zone-item:hover { padding-left: 4px; }
+  .zone-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .zone-name { flex: 1; font-size: 9px; letter-spacing: 1px; color: var(--text); }
+  .zone-fill { font-size: 12px; font-weight: 700; }
+  .zone-live { font-size: 7px; letter-spacing: 1px; color: var(--accent2); border: 1px solid var(--accent2); padding: 1px 5px; border-radius: 2px; }
+
+  /* leaflet popup */
+  .leaflet-popup-content-wrapper {
+    background: rgba(6,8,16,0.97) !important;
+    border: 1px solid rgba(99,202,255,0.2) !important;
+    border-radius: 6px !important;
+    box-shadow: 0 0 20px rgba(0,229,255,0.15) !important;
+    color: var(--text) !important;
+    font-family: 'Share Tech Mono', monospace !important;
+  }
+  .leaflet-popup-tip { background: rgba(6,8,16,0.97) !important; }
+  .leaflet-popup-content { margin: 12px 14px !important; font-size: 10px !important; }
+  .pu-title { font-size: 10px; letter-spacing: 3px; margin-bottom: 8px; }
+  .pu-row { display: flex; justify-content: space-between; gap: 16px; font-size: 9px; padding: 3px 0; border-bottom: 1px solid rgba(99,202,255,0.05); }
+  .pu-row:last-child { border-bottom: none; }
+  .pu-k { color: var(--muted); letter-spacing: 1px; }
+  .pu-view { margin-top: 10px; text-align: center; font-size: 8px; letter-spacing: 2px; color: var(--accent); cursor: pointer; border: 1px solid rgba(0,229,255,0.3); padding: 5px; border-radius: 3px; }
+  .pu-view:hover { background: rgba(0,229,255,0.08); }
+
+  @media (max-width: 900px) {
+    main {
+      grid-template-columns: 1fr;
+    }
+    .bin-panel { grid-column: 1; grid-row: auto; flex-direction: row; flex-wrap: wrap; justify-content: center; }
+    .stats-panel { grid-column: 1; grid-template-columns: repeat(2, 1fr); }
+    .chart-panel { grid-column: 1; }
+    .bottom-row { grid-column: 1; grid-template-columns: 1fr; }
+  }
+
+  /* ── LOADING ── */
+  .loading-overlay {
+    position: fixed; inset: 0;
+    background: var(--bg);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    z-index: 999;
+    gap: 20px;
+    transition: opacity 0.8s ease;
+  }
+  .loading-overlay.hidden { opacity: 0; pointer-events: none; }
+  .loader-ring {
+    width: 60px; height: 60px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    box-shadow: var(--glow);
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loader-text {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px; letter-spacing: 4px; color: var(--accent);
+    animation: blink 1s step-end infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* number flip animation */
+  .flip { animation: flipIn 0.4s ease; }
+  @keyframes flipIn {
+    from { transform: rotateX(90deg); opacity: 0; }
+    to { transform: rotateX(0); opacity: 1; }
+  }
+
+  /* corner decorations */
+  .corner-tl, .corner-br {
+    position: absolute;
+    width: 16px; height: 16px;
+    pointer-events: none;
+  }
+  .corner-tl {
+    top: 10px; left: 10px;
+    border-top: 2px solid var(--accent);
+    border-left: 2px solid var(--accent);
+    opacity: 0.5;
+  }
+  .corner-br {
+    bottom: 10px; right: 10px;
+    border-bottom: 2px solid var(--accent);
+    border-right: 2px solid var(--accent);
+    opacity: 0.5;
+  }
+</style>
+</head>
+<body>
+
+<!-- Loading overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loader-ring"></div>
+  <div class="loader-text">CONNECTING TO FIREBASE...</div>
+</div>
+
+<!-- Header -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">🗑️</div>
+    <div class="logo-text">
+      <h1>SMARTBIN</h1>
+      <span>DIGITAL TWIN · MONITORING SYSTEM</span>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="live-badge"><div class="live-dot"></div>LIVE</div>
+    <div class="conn-status" id="connStatus">CONNECTING...</div>
+  </div>
+</header>
+
+<!-- Tab Navigation -->
+<nav class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('dashboard')">⬛ DASHBOARD · BIN-01</button>
+  <button class="tab-btn" onclick="switchTab('map')">🗺 ZONE MAP · ALL BINS</button>
+</nav>
+
+<!-- Dashboard Tab -->
+<div id="dashTab" class="tab-content active">
+
+
+  <!-- ── LEFT: Digital Twin Bin ── -->
+  <div class="panel bin-panel">
+    <div class="corner-tl"></div>
+    <div class="corner-br"></div>
+    <div class="panel-title">DIGITAL TWIN · BIN-01</div>
+
+    <div class="bin-3d">
+      <div class="bin-lid"></div>
+      <div class="bin-body" id="binBody">
+        <div class="bin-fill" id="binFill" style="height:0%"></div>
+        <div class="bin-side-lines"></div>
+      </div>
+      <div class="bin-markers">
+        <span class="bin-marker">100%</span>
+        <span class="bin-marker">75%</span>
+        <span class="bin-marker">50%</span>
+        <span class="bin-marker">25%</span>
+        <span class="bin-marker">0%</span>
+      </div>
+    </div>
+
+    <div class="big-percent">
+      <div class="value" id="bigPercent">--<span class="unit">%</span></div>
+      <div class="label">FILL LEVEL</div>
+    </div>
+
+    <div class="status-badge" id="statusBadge" style="color:var(--muted); border-color:var(--muted)">
+      AWAITING DATA
+    </div>
+
+    <!-- Distance raw -->
+    <div style="text-align:center; margin-top:8px;">
+      <div style="font-family:'Share Tech Mono',monospace; font-size:11px; color:var(--muted); letter-spacing:2px;">DISTANCE FROM SENSOR</div>
+      <div style="font-size:24px; font-weight:700; color:var(--accent); margin-top:4px;" id="distanceVal">-- <span style="font-size:14px;color:var(--muted)">cm</span></div>
+    </div>
+
+    <div style="width:100%; border-top:1px solid var(--border); padding-top:16px; margin-top:4px;">
+      <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+        <span style="font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--muted); letter-spacing:2px;">BIN HEIGHT</span>
+        <span style="font-family:'Share Tech Mono',monospace; font-size:12px; color:var(--accent);" id="binHeightVal">40 cm</span>
+      </div>
+      <div style="display:flex; justify-content:space-between;">
+        <span style="font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--muted); letter-spacing:2px;">LAST UPDATE</span>
+        <span style="font-family:'Share Tech Mono',monospace; font-size:11px; color:var(--text);" id="lastUpdateVal">--</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── RIGHT TOP: Stat Cards ── -->
+  <div class="stats-panel">
+    <div class="stat-card" style="--card-color: var(--accent);">
+      <div class="s-icon">📊</div>
+      <div class="s-label">Current Fill</div>
+      <div class="s-value" id="sc1">--%</div>
+      <div class="s-sub">of 40cm total</div>
+    </div>
+    <div class="stat-card" style="--card-color: var(--accent2);">
+      <div class="s-icon">📏</div>
+      <div class="s-label">Free Space</div>
+      <div class="s-value" id="sc2">-- cm</div>
+      <div class="s-sub">remaining capacity</div>
+    </div>
+    <div class="stat-card" style="--card-color: var(--accent3);">
+      <div class="s-icon">🕒</div>
+      <div class="s-label">Session Peak</div>
+      <div class="s-value" id="sc3">--%</div>
+      <div class="s-sub">highest reading</div>
+    </div>
+    <div class="stat-card" style="--card-color: var(--warn);">
+      <div class="s-icon">📉</div>
+      <div class="s-label">Session Low</div>
+      <div class="s-value" id="sc4">--%</div>
+      <div class="s-sub">lowest reading</div>
+    </div>
+    <div class="stat-card" style="--card-color: var(--accent2);">
+      <div class="s-icon">🔄</div>
+      <div class="s-label">Readings</div>
+      <div class="s-value" id="sc5">0</div>
+      <div class="s-sub">total data points</div>
+    </div>
+    <div class="stat-card" style="--card-color: var(--danger);">
+      <div class="s-icon">⚠️</div>
+      <div class="s-label">Alerts</div>
+      <div class="s-value" id="sc6">0</div>
+      <div class="s-sub">overflow warnings</div>
+    </div>
+  </div>
+
+  <!-- ── RIGHT BOTTOM: Chart ── -->
+  <div class="panel chart-panel">
+    <div class="panel-title">FILL HISTORY · LAST 20 READINGS</div>
+    <div class="chart-wrap">
+      <canvas id="historyChart"></canvas>
+    </div>
+  </div>
+
+  <!-- ── BOTTOM ROW ── -->
+  <div class="bottom-row">
+
+    <!-- Gauge -->
+    <div class="panel">
+      <div class="panel-title">CAPACITY GAUGE</div>
+      <div class="gauge-wrap">
+        <canvas id="gaugeCanvas" width="240" height="140"></canvas>
+        <div style="font-family:'Share Tech Mono',monospace; font-size:11px; color:var(--muted); letter-spacing:2px; margin-top:-10px;">
+          FILL LEVEL INDICATOR
+        </div>
+      </div>
+    </div>
+
+    <!-- Alerts log -->
+    <div class="panel" style="max-height:280px; overflow-y:auto;">
+      <div class="panel-title">EVENT LOG</div>
+      <div id="alertLog">
+        <div style="font-family:'Share Tech Mono',monospace; font-size:11px; color:var(--muted); text-align:center; padding:20px 0; letter-spacing:2px;">
+          NO EVENTS YET
+        </div>
+      </div>
+    </div>
+
+    <!-- Raw data table -->
+    <div class="panel" style="max-height:280px; overflow-y:auto;">
+      <div class="panel-title">RAW DATA STREAM</div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Fill %</th>
+            <th>Dist (cm)</th>
+            <th>State</th>
+          </tr>
+        </thead>
+        <tbody id="dataTableBody">
+          <tr><td colspan="4" style="color:var(--muted); text-align:center; padding:20px 0;">Waiting for data...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</main>
+</div>
+
+<!-- Map Tab -->
+<div id="mapTab" class="tab-content">
+  <div id="mapView"></div>
+  <div id="mapSidebar">
+    <div class="ms-header">
+      <span>— DIGITAL TWIN · ZONE MAP</span>
+      <span id="mapBinTag" style="color:var(--accent); font-size:9px;">SELECT A BIN</span>
+    </div>
+    <div class="map-stats">
+      <div class="map-stat"><div class="map-stat-num" id="ms-ok" style="color:#00ff9d">0</div><div class="map-stat-lbl">NORMAL</div></div>
+      <div class="map-stat"><div class="map-stat-num" id="ms-warn" style="color:#ffcc00">0</div><div class="map-stat-lbl">WARNING</div></div>
+      <div class="map-stat"><div class="map-stat-num" id="ms-crit" style="color:#ff3355">0</div><div class="map-stat-lbl">CRITICAL</div></div>
+    </div>
+    <div class="ms-body">
+      <div id="mapEmpty" class="map-empty">CLICK ANY MARKER<br>ON THE MAP<br>TO VIEW<br>DIGITAL TWIN STATUS</div>
+      <div id="mapDetail" style="display:none;"></div>
+      <div style="margin-top:16px;">
+        <div class="msec" style="margin-top:0">— ALL ZONES</div>
+        <div id="zoneList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+// ── Firebase Config ──
+const firebaseConfig = {
+  databaseURL: "https://smartbin-e66df-default-rtdb.firebaseio.com"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// ── State ──
+let history = [];
+let peakVal = 0, lowVal = 100;
+let alertCount = 0, readingCount = 0;
+let chart = null;
+let lastAlertLevel = null;
+
+// ── Chart init ──
+function initChart() {
+  const ctx = document.getElementById('historyChart').getContext('2d');
+  chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: [{
+        label: 'Fill %',
+        data: [],
+        borderColor: '#00e5ff',
+        backgroundColor: 'rgba(0,229,255,0.08)',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4,
+        pointBackgroundColor: '#00e5ff',
+        pointRadius: 3,
+        pointHoverRadius: 6,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 800, easing: 'easeInOutQuart' },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(6,8,16,0.95)',
+          borderColor: 'rgba(0,229,255,0.3)',
+          borderWidth: 1,
+          titleColor: '#00e5ff',
+          bodyColor: '#e2f0ff',
+          titleFont: { family: 'Share Tech Mono', size: 11 },
+          callbacks: {
+            label: ctx => ` ${ctx.parsed.y}% filled`
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: '#5a7a9a', font: { family: 'Share Tech Mono', size: 9 }, maxTicksLimit: 8 },
+          grid: { color: 'rgba(99,202,255,0.05)' },
+          border: { color: 'rgba(99,202,255,0.1)' }
+        },
+        y: {
+          min: 0, max: 100,
+          ticks: { color: '#5a7a9a', font: { family: 'Share Tech Mono', size: 9 }, callback: v => v + '%' },
+          grid: { color: 'rgba(99,202,255,0.05)' },
+          border: { color: 'rgba(99,202,255,0.1)' }
+        }
+      }
+    }
+  });
+}
+
+// ── Gauge draw ──
+function drawGauge(percent) {
+  const canvas = document.getElementById('gaugeCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  const cx = W / 2, cy = H - 20;
+  const r = 100;
+  const startAngle = Math.PI;
+  const endAngle = 0;
+
+  // BG arc
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, startAngle, endAngle);
+  ctx.strokeStyle = 'rgba(99,202,255,0.1)';
+  ctx.lineWidth = 18;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+
+  // Color based on level
+  let color;
+  if (percent < 50) color = '#00ff9d';
+  else if (percent < 75) color = '#ffcc00';
+  else if (percent < 90) color = '#ff6b35';
+  else color = '#ff3355';
+
+  // Fill arc
+  const fillAngle = startAngle + (percent / 100) * Math.PI;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, startAngle, fillAngle);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 18;
+  ctx.lineCap = 'round';
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 15;
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  // Tick marks
+  for (let i = 0; i <= 10; i++) {
+    const angle = Math.PI + (i / 10) * Math.PI;
+    const ir = r - 14, or = r - 24;
+    ctx.beginPath();
+    ctx.moveTo(cx + Math.cos(angle) * ir, cy + Math.sin(angle) * ir);
+    ctx.lineTo(cx + Math.cos(angle) * or, cy + Math.sin(angle) * or);
+    ctx.strokeStyle = i % 5 === 0 ? 'rgba(0,229,255,0.5)' : 'rgba(99,202,255,0.2)';
+    ctx.lineWidth = i % 5 === 0 ? 2 : 1;
+    ctx.stroke();
+  }
+
+  // Labels
+  ctx.font = '10px Share Tech Mono';
+  ctx.fillStyle = 'rgba(90,122,154,0.8)';
+  ctx.textAlign = 'center';
+  ['0', '25', '50', '75', '100'].forEach((label, i) => {
+    const angle = Math.PI + (i / 4) * Math.PI;
+    const lr = r - 36;
+    ctx.fillText(label, cx + Math.cos(angle) * lr, cy + Math.sin(angle) * lr + 4);
+  });
+
+  // Center value
+  ctx.font = 'bold 32px Exo 2';
+  ctx.fillStyle = color;
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 10;
+  ctx.textAlign = 'center';
+  ctx.fillText(percent + '%', cx, cy - 10);
+  ctx.shadowBlur = 0;
+
+  ctx.font = '10px Share Tech Mono';
+  ctx.fillStyle = 'rgba(90,122,154,0.8)';
+  ctx.fillText('FILL LEVEL', cx, cy + 8);
+}
+
+// ── Color for fill level ──
+function getFillColor(pct) {
+  if (pct < 50) return '#00ff9d';
+  if (pct < 75) return '#ffcc00';
+  if (pct < 90) return '#ff6b35';
+  return '#ff3355';
+}
+
+function getStatusText(pct) {
+  if (pct < 25) return 'EMPTY';
+  if (pct < 50) return 'LOW';
+  if (pct < 75) return 'MODERATE';
+  if (pct < 90) return 'HIGH';
+  return '⚠ OVERFLOW';
+}
+
+// ── Add event log entry ──
+function addAlert(msg, color, icon) {
+  const log = document.getElementById('alertLog');
+  const now = new Date().toLocaleTimeString();
+  const noEvents = log.querySelector('div[style*="NO EVENTS"]');
+  if (noEvents) noEvents.remove();
+  const el = document.createElement('div');
+  el.className = 'alert-item';
+  el.innerHTML = `
+    <div class="alert-dot" style="background:${color}; box-shadow:0 0 6px ${color}"></div>
+    <div>
+      <div style="font-size:12px;">${icon} ${msg}</div>
+      <div class="alert-time">${now}</div>
+    </div>
+  `;
+  log.insertBefore(el, log.firstChild);
+  // keep max 20
+  while (log.children.length > 20) log.removeChild(log.lastChild);
+}
+
+// ── Update raw data table ──
+function updateTable(pct, dist) {
+  const tbody = document.getElementById('dataTableBody');
+  const noData = tbody.querySelector('td[colspan]');
+  if (noData) tbody.innerHTML = '';
+
+  const color = getFillColor(pct);
+  const status = getStatusText(pct);
+  const row = document.createElement('tr');
+  row.innerHTML = `
+    <td style="color:var(--muted)">${readingCount}</td>
+    <td style="color:${color}; font-weight:700">${pct}%</td>
+    <td>${dist.toFixed(1)}</td>
+    <td><span class="tag" style="background:${color}22; color:${color}; border:1px solid ${color}44">${status}</span></td>
+  `;
+  tbody.insertBefore(row, tbody.firstChild);
+  while (tbody.children.length > 15) tbody.removeChild(tbody.lastChild);
+}
+
+// ── Main update function ──
+function updateDashboard(data) {
+  const pct  = data.fill_percent   ?? 0;
+  const dist = data.distance_cm    ?? 0;
+  const binH = data.bin_height_cm  ?? 40;
+  const color = getFillColor(pct);
+  const statusText = getStatusText(pct);
+
+  // Sync B1 to map if map is open
+  syncB1ToMap(pct, dist, data.temperature || null, data.humidity || null);
+
+  readingCount++;
+
+  // Loading → done
+  document.getElementById('loadingOverlay').classList.add('hidden');
+  document.getElementById('connStatus').textContent = 'CONNECTED';
+  document.getElementById('connStatus').className = 'conn-status connected';
+
+  // Bin fill animation
+  const fillEl = document.getElementById('binFill');
+  fillEl.style.height = pct + '%';
+  fillEl.style.setProperty('--fill-color', color);
+  fillEl.style.background = `linear-gradient(to top, ${color}, rgba(0,229,255,0.15))`;
+  fillEl.style.boxShadow = `0 -4px 20px ${color}`;
+
+  // Big percent
+  const bigEl = document.getElementById('bigPercent');
+  bigEl.innerHTML = `${pct}<span class="unit">%</span>`;
+  bigEl.style.background = `linear-gradient(135deg, ${color}, rgba(0,229,255,0.6))`;
+  bigEl.style['-webkit-background-clip'] = 'text';
+  bigEl.style['background-clip'] = 'text';
+  bigEl.classList.add('flip');
+  setTimeout(() => bigEl.classList.remove('flip'), 400);
+
+  // Status badge
+  const badge = document.getElementById('statusBadge');
+  badge.textContent = statusText;
+  badge.style.color = color;
+  badge.style.borderColor = color;
+  badge.style.background = `${color}11`;
+  badge.style.boxShadow = `0 0 14px ${color}33`;
+
+  // Distance
+  document.getElementById('distanceVal').innerHTML = `${dist.toFixed(1)} <span style="font-size:14px;color:var(--muted)">cm</span>`;
+  document.getElementById('binHeightVal').textContent = `${binH} cm`;
+  document.getElementById('lastUpdateVal').textContent = new Date().toLocaleTimeString();
+
+  // Stat cards
+  const freeSpace = Math.max(0, dist).toFixed(1);
+  if (pct > peakVal) peakVal = pct;
+  if (readingCount === 1 || pct < lowVal) lowVal = pct;
+
+  document.getElementById('sc1').textContent = pct + '%';
+  document.getElementById('sc2').textContent = freeSpace + ' cm';
+  document.getElementById('sc3').textContent = peakVal + '%';
+  document.getElementById('sc4').textContent = lowVal + '%';
+  document.getElementById('sc5').textContent = readingCount;
+
+  // Alerts
+  const currLevel = pct >= 90 ? 'overflow' : pct >= 75 ? 'high' : null;
+  if (currLevel !== lastAlertLevel) {
+    if (pct >= 90) {
+      alertCount++;
+      document.getElementById('sc6').textContent = alertCount;
+      addAlert(`Bin is almost full! (${pct}%)`, '#ff3355', '🚨');
+    } else if (pct >= 75) {
+      addAlert(`Fill level high: ${pct}%`, '#ff6b35', '⚠️');
+    } else if (lastAlertLevel && pct < 50) {
+      addAlert(`Bin emptied. Level: ${pct}%`, '#00ff9d', '✅');
+    }
+    lastAlertLevel = currLevel;
+  }
+
+  // Chart
+  const now = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  history.push({ t: now, v: pct });
+  if (history.length > 20) history.shift();
+  chart.data.labels = history.map(h => h.t);
+  chart.data.datasets[0].data = history.map(h => h.v);
+  chart.data.datasets[0].borderColor = color;
+  chart.data.datasets[0].backgroundColor = `${color}11`;
+  chart.update('active');
+
+  // Gauge
+  drawGauge(pct);
+
+  // Table
+  updateTable(pct, dist);
+}
+
+
+// ══════════════════════════════════════════
+// TAB SWITCHING
+// ══════════════════════════════════════════
+let mapInitialized = false;
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => { c.classList.remove('active'); c.style.display = 'none'; });
+
+  if (tab === 'dashboard') {
+    document.getElementById('dashTab').classList.add('active');
+    document.getElementById('dashTab').style.display = 'block';
+    document.querySelectorAll('.tab-btn')[0].classList.add('active');
+  } else {
+    document.getElementById('mapTab').classList.add('active');
+    document.getElementById('mapTab').style.display = 'flex';
+    document.querySelectorAll('.tab-btn')[1].classList.add('active');
+    if (!mapInitialized) { initMap(); mapInitialized = true; }
+    else { leafletMap.invalidateSize(); }
+  }
+}
+// init display
+document.getElementById('dashTab').style.display = 'block';
+document.getElementById('mapTab').style.display = 'none';
+
+// ══════════════════════════════════════════
+// MAP — BIN DATA & SIMULATION
+// ══════════════════════════════════════════
+const BIN_DATA = [
+  { id:'B1',  zone:'Adyar',          type:'residential', lat:13.0012, lng:80.2565, fill:3,  temp:31.2, humidity:65, isLive:true  },
+  { id:'B2',  zone:'T.Nagar',        type:'commercial',  lat:13.0418, lng:80.2341, fill:58, temp:33.1, humidity:62, isLive:false },
+  { id:'B3',  zone:'Anna Nagar',     type:'public',      lat:13.0878, lng:80.2089, fill:42, temp:30.8, humidity:68, isLive:false },
+  { id:'B4',  zone:'Tambaram',       type:'residential', lat:12.9249, lng:80.1000, fill:21, temp:30.5, humidity:70, isLive:false },
+  { id:'B5',  zone:'Velachery',      type:'commercial',  lat:12.9815, lng:80.2209, fill:74, temp:34.2, humidity:58, isLive:false },
+  { id:'B6',  zone:'Mylapore',       type:'public',      lat:13.0336, lng:80.2677, fill:55, temp:31.9, humidity:66, isLive:false },
+  { id:'B7',  zone:'Porur',          type:'residential', lat:13.0317, lng:80.1564, fill:18, temp:29.8, humidity:72, isLive:false },
+  { id:'B8',  zone:'Perambur',       type:'commercial',  lat:13.1147, lng:80.2392, fill:82, temp:33.6, humidity:61, isLive:false },
+  { id:'B9',  zone:'Guindy',         type:'public',      lat:13.0067, lng:80.2206, fill:38, temp:31.4, humidity:64, isLive:false },
+  { id:'B10', zone:'Sholinganallur', type:'residential', lat:12.9010, lng:80.2279, fill:67, temp:32.0, humidity:63, isLive:false },
+];
+const AREA_MULT = { commercial:1.4, public:1.2, residential:1.0 };
+
+function getMapStatus(fill) {
+  if (fill >= 80) return 'critical';
+  if (fill >= 50) return 'warning';
+  return 'normal';
+}
+function getMapColor(status) {
+  if (status === 'critical') return '#ff3355';
+  if (status === 'warning')  return '#ffcc00';
+  return '#00ff9d';
+}
+function getOverflowProb(fill) {
+  if (fill >= 80) return Math.min(99, Math.round(fill * 1.08));
+  if (fill >= 50) return Math.round(28 + (fill - 50) * 1.3);
+  return Math.round(fill * 0.35);
+}
+function freeSpace(fill) { return ((1 - fill/100)*40).toFixed(1); }
+
+// ── Leaflet map init ──
+let leafletMap, leafletMarkers = {};
+function initMap() {
+  leafletMap = L.map('mapView', { center:[13.0287, 80.2107], zoom:11, zoomControl:true, attributionControl:false });
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom:19 }).addTo(leafletMap);
+
+  BIN_DATA.forEach(bin => {
+    const m = L.marker([bin.lat, bin.lng], { icon: makeMapIcon(bin) }).addTo(leafletMap);
+    const status = getMapStatus(bin.fill);
+    const color  = getMapColor(status);
+    m.bindPopup(makePopup(bin), { maxWidth:220 });
+    m.on('click', () => { showMapDetail(bin); highlightZone(bin.id); });
+    leafletMarkers[bin.id] = m;
+  });
+
+  buildZoneList();
+  updateMapStats();
+  startSimulation();
+}
+
+function makeMapIcon(bin) {
+  const status = getMapStatus(bin.fill);
+  const color  = getMapColor(status);
+  const pulse  = status === 'critical'
+    ? `<circle cx="16" cy="16" r="14" fill="none" stroke="${color}" stroke-width="1" opacity="0.4"><animate attributeName="r" from="10" to="22" dur="1.4s" repeatCount="indefinite"/><animate attributeName="opacity" from="0.5" to="0" dur="1.4s" repeatCount="indefinite"/></circle>` : '';
+  const liveRing = bin.isLive
+    ? `<circle cx="16" cy="16" r="11" fill="none" stroke="#00e5ff" stroke-width="1.5" stroke-dasharray="3,2"/>` : '';
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">${pulse}${liveRing}<circle cx="16" cy="16" r="10" fill="${color}" opacity="0.15"/><circle cx="16" cy="16" r="6" fill="${color}"/></svg>`;
+  return L.divIcon({ html:svg, className:'', iconSize:[32,32], iconAnchor:[16,16], popupAnchor:[0,-18] });
+}
+
+function makePopup(bin) {
+  const status = getMapStatus(bin.fill);
+  const color  = getMapColor(status);
+  const live   = bin.isLive ? ' <span style="color:#00e5ff;font-size:7px;border:1px solid #00e5ff;padding:1px 4px;">LIVE</span>' : '';
+  return `<div class="pu-title" style="color:${color}">${bin.id} · ${bin.zone.toUpperCase()}${live}</div>
+    <div class="pu-row"><span class="pu-k">FILL</span><span style="color:${color}">${bin.fill}%</span></div>
+    <div class="pu-row"><span class="pu-k">STATUS</span><span style="color:${color}">${status.toUpperCase()}</span></div>
+    <div class="pu-row"><span class="pu-k">TYPE</span><span style="color:var(--text)">${bin.type.toUpperCase()}</span></div>
+    <div class="pu-row"><span class="pu-k">OVERFLOW RISK</span><span style="color:${color}">${getOverflowProb(bin.fill)}%</span></div>
+    <div class="pu-view" onclick="showMapDetail(getBin('${bin.id}')); highlightZone('${bin.id}')">VIEW DIGITAL TWIN →</div>`;
+}
+
+function getBin(id) { return BIN_DATA.find(b => b.id === id); }
+
+function refreshMarker(bin) {
+  if (!leafletMarkers[bin.id]) return;
+  leafletMarkers[bin.id].setIcon(makeMapIcon(bin));
+  leafletMarkers[bin.id].setPopupContent(makePopup(bin));
+}
+
+// ── Zone list ──
+function buildZoneList() {
+  const list = document.getElementById('zoneList');
+  list.innerHTML = '';
+  BIN_DATA.forEach(bin => {
+    const status = getMapStatus(bin.fill);
+    const color  = getMapColor(status);
+    const item   = document.createElement('div');
+    item.className = 'zone-item';
+    item.id = 'zi-' + bin.id;
+    item.innerHTML = `
+      <div class="zone-dot" style="background:${color}"></div>
+      <div class="zone-name">${bin.id} · ${bin.zone.toUpperCase()}</div>
+      ${bin.isLive ? '<span class="zone-live">LIVE</span>' : ''}
+      <div class="zone-fill" style="color:${color}">${bin.fill}%</div>
+    `;
+    item.addEventListener('click', () => {
+      leafletMap.setView([bin.lat, bin.lng], 13, { animate:true });
+      leafletMarkers[bin.id].openPopup();
+      showMapDetail(bin); highlightZone(bin.id);
+    });
+    list.appendChild(item);
+  });
+}
+
+function highlightZone(id) {
+  document.querySelectorAll('.zone-item').forEach(el => el.style.background = '');
+  const el = document.getElementById('zi-' + id);
+  if (el) el.style.background = 'rgba(0,229,255,0.05)';
+}
+
+// ── Stats bar ──
+function updateMapStats() {
+  let ok=0, warn=0, crit=0;
+  BIN_DATA.forEach(b => {
+    const s = getMapStatus(b.fill);
+    if (s==='normal') ok++; else if (s==='warning') warn++; else crit++;
+  });
+  document.getElementById('ms-ok').textContent   = ok;
+  document.getElementById('ms-warn').textContent  = warn;
+  document.getElementById('ms-crit').textContent  = crit;
+}
+
+// ── Detail panel ──
+function showMapDetail(bin) {
+  const status = getMapStatus(bin.fill);
+  const color  = getMapColor(status);
+  const prob   = getOverflowProb(bin.fill);
+  const pillStyle = status==='critical'
+    ? `color:#ff3355;border-color:#ff3355;background:rgba(255,51,85,0.08)`
+    : status==='warning'
+    ? `color:#ffcc00;border-color:#ffcc00;background:rgba(255,204,0,0.08)`
+    : `color:#00ff9d;border-color:#00ff9d;background:rgba(0,255,157,0.08)`;
+  const alertMsg = status==='critical'
+    ? `IMMEDIATE COLLECTION REQUIRED · ${bin.zone.toUpperCase()} OVERFLOW IMMINENT`
+    : status==='warning'
+    ? `SCHEDULE COLLECTION SOON · APPROACHING 80% THRESHOLD`
+    : `OPERATIONAL · NO ACTION REQUIRED`;
+  const alertStyle = status==='critical'
+    ? `color:#ff3355;border-color:#ff3355;background:rgba(255,51,85,0.06)`
+    : status==='warning'
+    ? `color:#ffcc00;border-color:#ffcc00;background:rgba(255,204,0,0.06)`
+    : `color:#00ff9d;border-color:#00ff9d;background:rgba(0,255,157,0.06)`;
+  const liveTag = bin.isLive ? `<span style="font-family:'Share Tech Mono',monospace;font-size:8px;color:#00e5ff;border:1px solid #00e5ff;padding:2px 6px;border-radius:2px;letter-spacing:1px;">LIVE SENSOR</span>` : '';
+
+  document.getElementById('mapEmpty').style.display  = 'none';
+  document.getElementById('mapDetail').style.display = 'block';
+  document.getElementById('mapBinTag').textContent   = bin.id + ' · ' + bin.zone.toUpperCase();
+
+  document.getElementById('mapDetail').innerHTML = `
+    <div class="mbin-hero">
+      <div class="mbin-id">${bin.id}</div>
+      <div class="mbin-pill" style="${pillStyle}">${status.toUpperCase()}</div>
+    </div>
+    ${liveTag ? `<div style="margin-bottom:12px;">${liveTag}</div>` : ''}
+
+    <div class="msec" style="margin-top:0">— FILL LEVEL · ${bin.fill}%</div>
+    <div class="mfill-track"><div class="mfill-fill" style="width:${bin.fill}%;background:${color};"></div></div>
+    <div class="mfill-labels"><span>0%</span><span style="color:${color}">${bin.fill}% NOW</span><span>100%</span></div>
+
+    <div class="msec">— OVERFLOW RISK · ${prob}%</div>
+    <div style="background:rgba(12,16,32,0.8);border:1px solid var(--border);border-radius:6px;padding:10px 12px;margin-bottom:12px;">
+      <div style="height:4px;background:rgba(99,202,255,0.08);border-radius:2px;overflow:hidden;margin-bottom:6px;">
+        <div style="height:100%;width:${prob}%;background:${color};border-radius:2px;transition:width 0.5s;"></div>
+      </div>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:20px;color:${color};text-align:center;">${prob}%</div>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:7px;letter-spacing:2px;color:var(--muted);text-align:center;margin-top:2px;">ML PREDICTED RISK</div>
+    </div>
+
+    <div class="mm-grid">
+      <div class="mm-card"><div class="mm-lbl">FILL LEVEL</div><div class="mm-val" style="color:${color}">${bin.fill}<span class="mm-unit">%</span></div></div>
+      <div class="mm-card"><div class="mm-lbl">FREE SPACE</div><div class="mm-val" style="color:var(--accent)">${freeSpace(bin.fill)}<span class="mm-unit">cm</span></div></div>
+      <div class="mm-card"><div class="mm-lbl">TEMPERATURE</div><div class="mm-val" style="color:${bin.temp>33?'#ffcc00':'var(--accent)'}">${bin.temp}<span class="mm-unit">°C</span></div></div>
+      <div class="mm-card"><div class="mm-lbl">HUMIDITY</div><div class="mm-val" style="color:var(--accent)">${bin.humidity}<span class="mm-unit">%</span></div></div>
+    </div>
+
+    <div class="msec">— BIN INFO</div>
+    <div class="minfo-table">
+      <div class="minfo-row"><span class="minfo-k">ZONE</span><span>${bin.zone.toUpperCase()}</span></div>
+      <div class="minfo-row"><span class="minfo-k">AREA TYPE</span><span>${bin.type.toUpperCase()}</span></div>
+      <div class="minfo-row"><span class="minfo-k">BIN HEIGHT</span><span>40 CM</span></div>
+      <div class="minfo-row"><span class="minfo-k">SENSOR</span><span>${bin.isLive ? 'ESP8266 + HC-SR04 · LIVE' : 'SIMULATED'}</span></div>
+      <div class="minfo-row"><span class="minfo-k">COLLECTION</span><span>06:00 DAILY</span></div>
+    </div>
+
+    <div class="msec">— SYSTEM ALERT</div>
+    <div class="malert-box" style="${alertStyle}">${alertMsg}</div>
+  `;
+}
+
+// ── Simulation engine — mirrors data_simulation.py logic ──
+function simulateTick() {
+  const now  = new Date();
+  const hour = now.getHours();
+  const isWeekend = now.getDay() === 0 || now.getDay() === 6;
+  const isPeak = hour >= 18 && hour <= 22;
+  const isCollectionHour = hour === 6 && now.getMinutes() < 1;
+
+  BIN_DATA.forEach(bin => {
+    if (bin.isLive) return; // skip B1 — live from Firebase
+
+    if (isCollectionHour) { bin.fill = 0; return; }
+
+    const base = (Math.random() * 2 + 1) * AREA_MULT[bin.type];
+    let increment = base;
+    if (isWeekend) increment *= 1.3;
+    if (isPeak)    increment *= 1.5;
+    if (Math.random() < 0.1) increment *= (1.5 + Math.random() * 0.5); // event spike
+
+    bin.fill = Math.min(100, +(bin.fill + increment).toFixed(1));
+
+    // drift temp & humidity slightly
+    bin.temp     = +Math.min(36, Math.max(28, bin.temp     + (Math.random()-0.5)*0.4)).toFixed(1);
+    bin.humidity = +Math.min(80, Math.max(50, bin.humidity + (Math.random()-0.5)*0.8)).toFixed(1);
+
+    refreshMarker(bin);
+  });
+
+  buildZoneList();
+  updateMapStats();
+
+  // if a bin is currently shown in detail, refresh it
+  const tag = document.getElementById('mapBinTag').textContent;
+  if (tag && tag !== 'SELECT A BIN') {
+    const id = tag.split(' ')[0];
+    const bin = getBin(id);
+    if (bin && document.getElementById('mapDetail').style.display !== 'none') showMapDetail(bin);
+  }
+}
+
+function startSimulation() {
+  setInterval(simulateTick, 30000); // every 30 seconds
+}
+
+// ── Sync B1 live data from Firebase to map ──
+function syncB1ToMap(pct, dist, temp, humidity) {
+  const b1 = getBin('B1');
+  if (!b1) return;
+  b1.fill     = pct;
+  b1.temp     = temp     || b1.temp;
+  b1.humidity = humidity || b1.humidity;
+  refreshMarker(b1);
+
+  // update zone list entry
+  const zi = document.getElementById('zi-B1');
+  if (zi) {
+    const color = getMapColor(getMapStatus(pct));
+    zi.querySelector('.zone-fill').textContent = pct + '%';
+    zi.querySelector('.zone-fill').style.color = color;
+    zi.querySelector('.zone-dot').style.background = color;
+  }
+  updateMapStats();
+
+  // if B1 is currently shown in detail panel, refresh it
+  const tag = document.getElementById('mapBinTag').textContent;
+  if (tag && tag.startsWith('B1')) showMapDetail(b1);
+}
+
+function startFirebase() {
+  const ref = db.ref('/dustbin');
+  ref.on('value', snap => {
+    const data = snap.val();
+    if (data) updateDashboard(data);
+  }, err => {
+    document.getElementById('connStatus').textContent = 'ERROR: ' + err.code;
+    document.getElementById('connStatus').className = 'conn-status error';
+    document.getElementById('loadingOverlay').classList.add('hidden');
+    addAlert('Firebase connection error: ' + err.code, '#ff3355', '❌');
+  });
+}
+
+// ── Init ──
+window.addEventListener('load', () => {
+  initChart();
+  drawGauge(0);
+  startFirebase();
+
+  // Hide loading after 5s regardless
+  setTimeout(() => {
+    document.getElementById('loadingOverlay').classList.add('hidden');
+  }, 5000);
+});
+</script>
+</body>
+</html>
