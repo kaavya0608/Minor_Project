@@ -742,7 +742,10 @@
     <div id="mapSidebar">
       <div class="msh">
         <span>— DIGITAL TWIN · ZONE MAP</span>
-        <span id="mBinTag" style="color:var(--accent);">SELECT A BIN</span>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button id="resetBtn" style="font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:1px;color:#ffcc00;background:rgba(255,204,0,0.08);border:1px solid #ffcc00;padding:3px 8px;border-radius:2px;cursor:pointer;">↺ RESET BINS</button>
+          <span id="mBinTag" style="color:var(--accent);">SELECT A BIN</span>
+        </div>
       </div>
       <div class="mst">
         <div class="mstc"><div class="mstc-n" id="msOk" style="color:#00ff9d">0</div><div class="mstc-l">NORMAL</div></div>
@@ -1158,6 +1161,40 @@ function initMap() {
   buildZoneList();
   updateStats();
   setInterval(simTick, 30000);
+
+  // Wire reset button
+  document.getElementById('resetBtn').addEventListener('click', resetBins);
+}
+
+// Reset all simulated bins to realistic starting values
+const RESET_FILLS = { B1:3, B2:18, B3:12, B4:8, B5:22, B6:15, B7:6, B8:25, B9:10, B10:19 };
+function resetBins() {
+  BINS.forEach(bin => {
+    if (bin.live) return; // never reset live sensor
+    bin.fill = RESET_FILLS[bin.id] || 10;
+    bin.temp = +(29 + Math.random()*3).toFixed(1);
+    bin.hum  = +(60 + Math.random()*8).toFixed(1);
+    leafletMarkers[bin.id].setIcon(makeIcon(bin));
+    leafletMarkers[bin.id].setPopupContent(makePopup(bin));
+    const zi = document.getElementById('zi-'+bin.id);
+    if (zi) {
+      const c = mColor(mStatus(bin.fill));
+      zi.querySelector('.zfill').textContent = bin.fill+'%';
+      zi.querySelector('.zfill').style.color = c;
+      zi.querySelector('.zdot').style.background = c;
+    }
+  });
+  updateStats();
+  // Reset detail panel
+  document.getElementById('mEmpty').style.display  = 'block';
+  document.getElementById('mDetail').style.display = 'none';
+  document.getElementById('mBinTag').textContent   = 'SELECT A BIN';
+  // Flash the button to confirm
+  const btn = document.getElementById('resetBtn');
+  btn.textContent = '✓ RESET DONE';
+  btn.style.color = '#00ff9d';
+  btn.style.borderColor = '#00ff9d';
+  setTimeout(() => { btn.textContent='↺ RESET BINS'; btn.style.color='#ffcc00'; btn.style.borderColor='#ffcc00'; }, 2000);
 }
 
 function buildZoneList() {
