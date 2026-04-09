@@ -665,8 +665,8 @@
 
 <!-- Tab Navigation -->
 <nav class="tab-nav">
-  <button class="tab-btn active" id="tabBtn0" onclick="window.switchTab('dashboard')">⬛ DASHBOARD · BIN-01</button>
-  <button class="tab-btn" id="tabBtn1" onclick="window.switchTab('map')">🗺 ZONE MAP · ALL BINS</button>
+  <button class="tab-btn active" id="tabBtn0">⬛ DASHBOARD · BIN-01</button>
+  <button class="tab-btn" id="tabBtn1">🗺 ZONE MAP · ALL BINS</button>
 </nav>
 
 <!-- Dashboard Tab -->
@@ -1433,6 +1433,10 @@ window.addEventListener('load', () => {
   initChart();
   drawGauge(0);
   startFirebase();
+
+  // Tab button listeners
+  document.getElementById('tabBtn0').addEventListener('click', () => switchTab('dashboard'));
+  document.getElementById('tabBtn1').addEventListener('click', () => switchTab('map'));
 
   // Hide loading after 2s regardless — map tab must be accessible without hardware
   setTimeout(() => {
