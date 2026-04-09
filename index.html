@@ -441,140 +441,59 @@
   }
 
   /* ── TABS ── */
-  .tab-nav {
-    position: relative; z-index: 10;
-    display: flex; align-items: center; gap: 4px;
-    padding: 0 36px;
-    background: rgba(6,8,16,0.9);
-    border-bottom: 1px solid var(--border);
-    backdrop-filter: blur(20px);
-  }
-  .tab-btn {
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 11px; letter-spacing: 2px;
-    color: var(--muted);
-    background: none; border: none;
-    padding: 12px 20px;
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    transition: all 0.2s;
-    text-transform: uppercase;
-  }
-  .tab-btn:hover { color: var(--accent); }
-  .tab-btn.active {
-    color: var(--accent);
-    border-bottom-color: var(--accent);
-    text-shadow: 0 0 10px rgba(0,229,255,0.5);
-  }
-  .tab-content { display: none; }
-  .tab-content.active { display: block; }
+  .tab-nav { position:relative; z-index:10; display:flex; align-items:center; gap:4px; padding:0 36px; background:rgba(6,8,16,0.9); border-bottom:1px solid var(--border); backdrop-filter:blur(20px); }
+  .tab-btn { font-family:'Share Tech Mono',monospace; font-size:11px; letter-spacing:2px; color:var(--muted); background:none; border:none; padding:12px 20px; cursor:pointer; border-bottom:2px solid transparent; transition:all 0.2s; text-transform:uppercase; }
+  .tab-btn:hover { color:var(--accent); }
+  .tab-btn.active { color:var(--accent); border-bottom-color:var(--accent); text-shadow:0 0 10px rgba(0,229,255,0.5); }
 
   /* ── MAP TAB ── */
-  #mapTab {
-    display: none;
-    height: calc(100vh - 100px);
-    position: relative;
-  }
-  #mapTab.active { display: flex; }
-  #mapView {
-    flex: 1;
-    height: 100%;
-  }
-  .leaflet-container { background: #0d1829 !important; }
-
-  /* map sidebar */
-  #mapSidebar {
-    width: 310px;
-    background: rgba(6,8,16,0.97);
-    border-left: 1px solid var(--border);
-    display: flex; flex-direction: column;
-    overflow: hidden; flex-shrink: 0;
-  }
-  .ms-header {
-    padding: 14px 16px;
-    border-bottom: 1px solid var(--border);
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 9px; letter-spacing: 3px; color: var(--muted);
-    display: flex; justify-content: space-between; align-items: center;
-  }
-  .ms-body { flex: 1; overflow-y: auto; padding: 16px; }
-  .ms-body::-webkit-scrollbar { width: 3px; }
-  .ms-body::-webkit-scrollbar-thumb { background: var(--border); }
-
-  /* stats bar */
-  .map-stats {
-    display: grid; grid-template-columns: 1fr 1fr 1fr;
-    border-bottom: 1px solid var(--border);
-  }
-  .map-stat {
-    padding: 10px 8px; text-align: center;
-    border-right: 1px solid var(--border);
-  }
-  .map-stat:last-child { border-right: none; }
-  .map-stat-num { font-family: 'Share Tech Mono', monospace; font-size: 20px; }
-  .map-stat-lbl { font-family: 'Share Tech Mono', monospace; font-size: 8px; letter-spacing: 1px; color: var(--muted); margin-top: 2px; }
-
-  /* empty state */
-  .map-empty {
-    text-align: center; color: var(--muted);
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 9px; letter-spacing: 2px;
-    margin-top: 60px; line-height: 2.6;
-  }
-
-  /* bin detail card */
-  .mbin-hero { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-  .mbin-id { font-family: 'Share Tech Mono', monospace; font-size: 22px; letter-spacing: 4px; color: var(--accent); }
-  .mbin-pill {
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 8px; letter-spacing: 2px;
-    padding: 4px 10px; border-radius: 2px; border: 1px solid;
-  }
-  .msec { font-family: 'Share Tech Mono', monospace; font-size: 8px; letter-spacing: 3px; color: var(--muted); margin: 14px 0 8px; }
-  .mfill-track { height: 5px; background: rgba(99,202,255,0.08); border: 1px solid var(--border); border-radius: 1px; overflow: hidden; margin-bottom: 4px; }
-  .mfill-fill { height: 100%; border-radius: 1px; transition: width 0.6s ease; }
-  .mfill-labels { display: flex; justify-content: space-between; font-family: 'Share Tech Mono', monospace; font-size: 8px; color: var(--muted); margin-bottom: 12px; }
-  .mm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 12px; }
-  .mm-card { background: rgba(12,16,32,0.8); border: 1px solid var(--border); border-radius: 6px; padding: 9px 11px; }
-  .mm-lbl { font-family: 'Share Tech Mono', monospace; font-size: 7px; letter-spacing: 2px; color: var(--muted); margin-bottom: 3px; }
-  .mm-val { font-family: 'Share Tech Mono', monospace; font-size: 18px; }
-  .mm-unit { font-size: 9px; color: var(--muted); }
-  .minfo-table { background: rgba(12,16,32,0.8); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; margin-bottom: 12px; }
-  .minfo-row { display: flex; justify-content: space-between; padding: 7px 12px; font-family: 'Share Tech Mono', monospace; font-size: 9px; border-bottom: 1px solid rgba(99,202,255,0.05); }
-  .minfo-row:last-child { border-bottom: none; }
-  .minfo-k { color: var(--muted); }
-  .malert-box { border-radius: 4px; padding: 10px 12px; font-family: 'Share Tech Mono', monospace; font-size: 8px; letter-spacing: 1px; line-height: 2; margin-bottom: 12px; border: 1px solid; }
-
-  /* zone list */
-  .zone-item {
-    display: flex; align-items: center; gap: 8px;
-    padding: 8px 0; border-bottom: 1px solid rgba(99,202,255,0.05);
-    cursor: pointer; font-family: 'Share Tech Mono', monospace;
-    transition: padding-left 0.15s;
-  }
-  .zone-item:hover { padding-left: 4px; }
-  .zone-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-  .zone-name { flex: 1; font-size: 9px; letter-spacing: 1px; color: var(--text); }
-  .zone-fill { font-size: 12px; font-weight: 700; }
-  .zone-live { font-size: 7px; letter-spacing: 1px; color: var(--accent2); border: 1px solid var(--accent2); padding: 1px 5px; border-radius: 2px; }
-
-  /* leaflet popup */
-  .leaflet-popup-content-wrapper {
-    background: rgba(6,8,16,0.97) !important;
-    border: 1px solid rgba(99,202,255,0.2) !important;
-    border-radius: 6px !important;
-    box-shadow: 0 0 20px rgba(0,229,255,0.15) !important;
-    color: var(--text) !important;
-    font-family: 'Share Tech Mono', monospace !important;
-  }
-  .leaflet-popup-tip { background: rgba(6,8,16,0.97) !important; }
-  .leaflet-popup-content { margin: 12px 14px !important; font-size: 10px !important; }
-  .pu-title { font-size: 10px; letter-spacing: 3px; margin-bottom: 8px; }
-  .pu-row { display: flex; justify-content: space-between; gap: 16px; font-size: 9px; padding: 3px 0; border-bottom: 1px solid rgba(99,202,255,0.05); }
-  .pu-row:last-child { border-bottom: none; }
-  .pu-k { color: var(--muted); letter-spacing: 1px; }
-  .pu-view { margin-top: 10px; text-align: center; font-size: 8px; letter-spacing: 2px; color: var(--accent); cursor: pointer; border: 1px solid rgba(0,229,255,0.3); padding: 5px; border-radius: 3px; }
-  .pu-view:hover { background: rgba(0,229,255,0.08); }
+  #mapTab { display:none; height:calc(100vh - 97px); }
+  #mapTabInner { display:flex; height:100%; }
+  #mapView { flex:1; height:100%; }
+  .leaflet-container { background:#0d1829 !important; }
+  #mapSidebar { width:300px; background:rgba(6,8,16,0.97); border-left:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden; flex-shrink:0; }
+  .msh { padding:12px 16px; border-bottom:1px solid var(--border); font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:3px; color:var(--muted); display:flex; justify-content:space-between; align-items:center; }
+  .mst { display:grid; grid-template-columns:1fr 1fr 1fr; border-bottom:1px solid var(--border); }
+  .mstc { padding:10px 8px; text-align:center; border-right:1px solid var(--border); }
+  .mstc:last-child { border-right:none; }
+  .mstc-n { font-family:'Share Tech Mono',monospace; font-size:20px; }
+  .mstc-l { font-family:'Share Tech Mono',monospace; font-size:8px; letter-spacing:1px; color:var(--muted); margin-top:2px; }
+  .msb { flex:1; overflow-y:auto; padding:14px; }
+  .msb::-webkit-scrollbar { width:2px; }
+  .msb::-webkit-scrollbar-thumb { background:var(--border); }
+  .mempty { text-align:center; color:var(--muted); font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:2px; margin-top:50px; line-height:2.6; }
+  .msec { font-family:'Share Tech Mono',monospace; font-size:8px; letter-spacing:3px; color:var(--muted); margin:12px 0 8px; }
+  .zitem { display:flex; align-items:center; gap:8px; padding:7px 0; border-bottom:1px solid rgba(99,202,255,0.05); cursor:pointer; transition:padding-left 0.15s; }
+  .zitem:hover { padding-left:4px; }
+  .zdot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+  .zname { flex:1; font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:1px; color:var(--text); }
+  .zfill { font-family:'Share Tech Mono',monospace; font-size:12px; font-weight:700; }
+  .zlive { font-family:'Share Tech Mono',monospace; font-size:7px; letter-spacing:1px; color:var(--accent); border:1px solid var(--accent); padding:1px 5px; border-radius:2px; }
+  .mhero { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+  .mhero-id { font-family:'Share Tech Mono',monospace; font-size:22px; letter-spacing:4px; color:var(--accent); }
+  .mpill { font-family:'Share Tech Mono',monospace; font-size:8px; letter-spacing:2px; padding:4px 10px; border-radius:2px; border:1px solid; }
+  .mtrack { height:5px; background:rgba(99,202,255,0.08); border:1px solid var(--border); border-radius:1px; overflow:hidden; margin-bottom:4px; }
+  .mfill { height:100%; border-radius:1px; transition:width 0.5s; }
+  .mlbls { display:flex; justify-content:space-between; font-family:'Share Tech Mono',monospace; font-size:8px; color:var(--muted); margin-bottom:12px; }
+  .mgrid { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:12px; }
+  .mcard { background:rgba(12,16,32,0.8); border:1px solid var(--border); border-radius:6px; padding:9px 11px; }
+  .mclbl { font-family:'Share Tech Mono',monospace; font-size:7px; letter-spacing:2px; color:var(--muted); margin-bottom:3px; }
+  .mcval { font-family:'Share Tech Mono',monospace; font-size:18px; }
+  .mcunit { font-size:9px; color:var(--muted); }
+  .mitable { background:rgba(12,16,32,0.8); border:1px solid var(--border); border-radius:6px; overflow:hidden; margin-bottom:12px; }
+  .mirow { display:flex; justify-content:space-between; padding:7px 12px; font-family:'Share Tech Mono',monospace; font-size:9px; border-bottom:1px solid rgba(99,202,255,0.05); }
+  .mirow:last-child { border-bottom:none; }
+  .mik { color:var(--muted); }
+  .malert { border-radius:4px; padding:10px 12px; font-family:'Share Tech Mono',monospace; font-size:8px; letter-spacing:1px; line-height:2; border:1px solid; }
+  .leaflet-popup-content-wrapper { background:rgba(6,8,16,0.97) !important; border:1px solid rgba(99,202,255,0.2) !important; border-radius:6px !important; box-shadow:0 0 20px rgba(0,229,255,0.15) !important; color:var(--text) !important; font-family:'Share Tech Mono',monospace !important; }
+  .leaflet-popup-tip { background:rgba(6,8,16,0.97) !important; }
+  .leaflet-popup-content { margin:12px 14px !important; font-size:10px !important; }
+  .put { font-size:10px; letter-spacing:3px; margin-bottom:8px; }
+  .pur { display:flex; justify-content:space-between; gap:16px; font-size:9px; padding:3px 0; border-bottom:1px solid rgba(99,202,255,0.05); }
+  .pur:last-child { border-bottom:none; }
+  .puk { color:var(--muted); letter-spacing:1px; }
+  .pvw { margin-top:10px; text-align:center; font-size:8px; letter-spacing:2px; color:var(--accent); cursor:pointer; border:1px solid rgba(0,229,255,0.3); padding:5px; border-radius:3px; }
+  .pvw:hover { background:rgba(0,229,255,0.08); }
 
   @media (max-width: 900px) {
     main {
@@ -642,10 +561,10 @@
 <body>
 
 <!-- Loading overlay -->
-<div class="loading-overlay" id="loadingOverlay" onclick="this.classList.add('hidden')" style="cursor:pointer;">
+<div class="loading-overlay" id="loadingOverlay" style="cursor:pointer;" onclick="this.classList.add('hidden')">
   <div class="loader-ring"></div>
   <div class="loader-text">CONNECTING TO FIREBASE...</div>
-  <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:2px;margin-top:8px;">TAP ANYWHERE TO CONTINUE</div>
+  <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:2px;margin-top:10px;">TAP TO CONTINUE</div>
 </div>
 
 <!-- Header -->
@@ -663,15 +582,16 @@
   </div>
 </header>
 
-<!-- Tab Navigation -->
+<!-- Tab Nav -->
 <nav class="tab-nav">
   <button class="tab-btn active" id="tabBtn0">⬛ DASHBOARD · BIN-01</button>
   <button class="tab-btn" id="tabBtn1">🗺 ZONE MAP · ALL BINS</button>
 </nav>
 
 <!-- Dashboard Tab -->
-<div id="dashTab" class="tab-content active">
-
+<div id="dashTab">
+<!-- Main Dashboard -->
+<main>
 
   <!-- ── LEFT: Digital Twin Bin ── -->
   <div class="panel bin-panel">
@@ -813,31 +733,35 @@
 
   </div>
 </main>
-</div>
+</div><!-- /dashTab -->
 
 <!-- Map Tab -->
-<div id="mapTab" class="tab-content">
-  <div id="mapView"></div>
-  <div id="mapSidebar">
-    <div class="ms-header">
-      <span>— DIGITAL TWIN · ZONE MAP</span>
-      <span id="mapBinTag" style="color:var(--accent); font-size:9px;">SELECT A BIN</span>
-    </div>
-    <div class="map-stats">
-      <div class="map-stat"><div class="map-stat-num" id="ms-ok" style="color:#00ff9d">0</div><div class="map-stat-lbl">NORMAL</div></div>
-      <div class="map-stat"><div class="map-stat-num" id="ms-warn" style="color:#ffcc00">0</div><div class="map-stat-lbl">WARNING</div></div>
-      <div class="map-stat"><div class="map-stat-num" id="ms-crit" style="color:#ff3355">0</div><div class="map-stat-lbl">CRITICAL</div></div>
-    </div>
-    <div class="ms-body">
-      <div id="mapEmpty" class="map-empty">CLICK ANY MARKER<br>ON THE MAP<br>TO VIEW<br>DIGITAL TWIN STATUS</div>
-      <div id="mapDetail" style="display:none;"></div>
-      <div style="margin-top:16px;">
-        <div class="msec" style="margin-top:0">— ALL ZONES</div>
-        <div id="zoneList"></div>
+<div id="mapTab">
+  <div id="mapTabInner">
+    <div id="mapView"></div>
+    <div id="mapSidebar">
+      <div class="msh">
+        <span>— DIGITAL TWIN · ZONE MAP</span>
+        <span id="mBinTag" style="color:var(--accent);">SELECT A BIN</span>
+      </div>
+      <div class="mst">
+        <div class="mstc"><div class="mstc-n" id="msOk" style="color:#00ff9d">0</div><div class="mstc-l">NORMAL</div></div>
+        <div class="mstc"><div class="mstc-n" id="msWarn" style="color:#ffcc00">0</div><div class="mstc-l">WARNING</div></div>
+        <div class="mstc"><div class="mstc-n" id="msCrit" style="color:#ff3355">0</div><div class="mstc-l">CRITICAL</div></div>
+      </div>
+      <div class="msb">
+        <div id="mEmpty" class="mempty">CLICK ANY MARKER<br>ON THE MAP<br>TO VIEW<br>DIGITAL TWIN</div>
+        <div id="mDetail" style="display:none;"></div>
+        <div style="margin-top:14px;">
+          <div class="msec" style="margin-top:0;">— ALL ZONES</div>
+          <div id="zoneList"></div>
+        </div>
       </div>
     </div>
   </div>
 </div>
+
+<script>
 // ── Firebase Config ──
 const firebaseConfig = {
   databaseURL: "https://smartbin-e66df-default-rtdb.firebaseio.com"
@@ -1045,10 +969,10 @@ function updateDashboard(data) {
   const color = getFillColor(pct);
   const statusText = getStatusText(pct);
 
-  // Sync B1 to map if map is open
-  syncB1ToMap(pct, dist, data.temperature || null, data.humidity || null);
-
   readingCount++;
+
+  // Sync B1 to map
+  syncB1(pct, data.temperature||null, data.humidity||null);
 
   // Loading → done
   document.getElementById('loadingOverlay').classList.add('hidden');
@@ -1127,294 +1051,7 @@ function updateDashboard(data) {
   updateTable(pct, dist);
 }
 
-
-// ══════════════════════════════════════════
-// TAB SWITCHING — defined on window so onclick can find it
-// ══════════════════════════════════════════
-let mapInitialized = false;
-window.switchTab = function(tab) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(c => { c.classList.remove('active'); c.style.display = 'none'; });
-
-  if (tab === 'dashboard') {
-    document.getElementById('dashTab').classList.add('active');
-    document.getElementById('dashTab').style.display = 'block';
-    document.getElementById('tabBtn0').classList.add('active');
-  } else {
-    document.getElementById('mapTab').classList.add('active');
-    document.getElementById('mapTab').style.display = 'flex';
-    document.getElementById('tabBtn1').classList.add('active');
-    if (!mapInitialized) { initMap(); mapInitialized = true; }
-    else { leafletMap.invalidateSize(); }
-  }
-}
-// init display
-document.getElementById('dashTab').style.display = 'block';
-document.getElementById('mapTab').style.display = 'none';
-
-// ══════════════════════════════════════════
-// MAP — BIN DATA & SIMULATION
-// ══════════════════════════════════════════
-const BIN_DATA = [
-  { id:'B1',  zone:'Adyar',          type:'residential', lat:13.0012, lng:80.2565, fill:3,  temp:31.2, humidity:65, isLive:true  },
-  { id:'B2',  zone:'T.Nagar',        type:'commercial',  lat:13.0418, lng:80.2341, fill:58, temp:33.1, humidity:62, isLive:false },
-  { id:'B3',  zone:'Anna Nagar',     type:'public',      lat:13.0878, lng:80.2089, fill:42, temp:30.8, humidity:68, isLive:false },
-  { id:'B4',  zone:'Tambaram',       type:'residential', lat:12.9249, lng:80.1000, fill:21, temp:30.5, humidity:70, isLive:false },
-  { id:'B5',  zone:'Velachery',      type:'commercial',  lat:12.9815, lng:80.2209, fill:74, temp:34.2, humidity:58, isLive:false },
-  { id:'B6',  zone:'Mylapore',       type:'public',      lat:13.0336, lng:80.2677, fill:55, temp:31.9, humidity:66, isLive:false },
-  { id:'B7',  zone:'Porur',          type:'residential', lat:13.0317, lng:80.1564, fill:18, temp:29.8, humidity:72, isLive:false },
-  { id:'B8',  zone:'Perambur',       type:'commercial',  lat:13.1147, lng:80.2392, fill:82, temp:33.6, humidity:61, isLive:false },
-  { id:'B9',  zone:'Guindy',         type:'public',      lat:13.0067, lng:80.2206, fill:38, temp:31.4, humidity:64, isLive:false },
-  { id:'B10', zone:'Sholinganallur', type:'residential', lat:12.9010, lng:80.2279, fill:67, temp:32.0, humidity:63, isLive:false },
-];
-const AREA_MULT = { commercial:1.4, public:1.2, residential:1.0 };
-
-function getMapStatus(fill) {
-  if (fill >= 80) return 'critical';
-  if (fill >= 50) return 'warning';
-  return 'normal';
-}
-function getMapColor(status) {
-  if (status === 'critical') return '#ff3355';
-  if (status === 'warning')  return '#ffcc00';
-  return '#00ff9d';
-}
-function getOverflowProb(fill) {
-  if (fill >= 80) return Math.min(99, Math.round(fill * 1.08));
-  if (fill >= 50) return Math.round(28 + (fill - 50) * 1.3);
-  return Math.round(fill * 0.35);
-}
-function freeSpace(fill) { return ((1 - fill/100)*40).toFixed(1); }
-
-// ── Leaflet map init ──
-let leafletMap, leafletMarkers = {};
-function initMap() {
-  leafletMap = L.map('mapView', { center:[13.0287, 80.2107], zoom:11, zoomControl:true, attributionControl:false });
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom:19 }).addTo(leafletMap);
-
-  BIN_DATA.forEach(bin => {
-    const m = L.marker([bin.lat, bin.lng], { icon: makeMapIcon(bin) }).addTo(leafletMap);
-    const status = getMapStatus(bin.fill);
-    const color  = getMapColor(status);
-    m.bindPopup(makePopup(bin), { maxWidth:220 });
-    m.on('click', () => { showMapDetail(bin); highlightZone(bin.id); });
-    leafletMarkers[bin.id] = m;
-  });
-
-  buildZoneList();
-  updateMapStats();
-  startSimulation();
-}
-
-function makeMapIcon(bin) {
-  const status = getMapStatus(bin.fill);
-  const color  = getMapColor(status);
-  const pulse  = status === 'critical'
-    ? `<circle cx="16" cy="16" r="14" fill="none" stroke="${color}" stroke-width="1" opacity="0.4"><animate attributeName="r" from="10" to="22" dur="1.4s" repeatCount="indefinite"/><animate attributeName="opacity" from="0.5" to="0" dur="1.4s" repeatCount="indefinite"/></circle>` : '';
-  const liveRing = bin.isLive
-    ? `<circle cx="16" cy="16" r="11" fill="none" stroke="#00e5ff" stroke-width="1.5" stroke-dasharray="3,2"/>` : '';
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">${pulse}${liveRing}<circle cx="16" cy="16" r="10" fill="${color}" opacity="0.15"/><circle cx="16" cy="16" r="6" fill="${color}"/></svg>`;
-  return L.divIcon({ html:svg, className:'', iconSize:[32,32], iconAnchor:[16,16], popupAnchor:[0,-18] });
-}
-
-function makePopup(bin) {
-  const status = getMapStatus(bin.fill);
-  const color  = getMapColor(status);
-  const live   = bin.isLive ? ' <span style="color:#00e5ff;font-size:7px;border:1px solid #00e5ff;padding:1px 4px;">LIVE</span>' : '';
-  return `<div class="pu-title" style="color:${color}">${bin.id} · ${bin.zone.toUpperCase()}${live}</div>
-    <div class="pu-row"><span class="pu-k">FILL</span><span style="color:${color}">${bin.fill}%</span></div>
-    <div class="pu-row"><span class="pu-k">STATUS</span><span style="color:${color}">${status.toUpperCase()}</span></div>
-    <div class="pu-row"><span class="pu-k">TYPE</span><span style="color:var(--text)">${bin.type.toUpperCase()}</span></div>
-    <div class="pu-row"><span class="pu-k">OVERFLOW RISK</span><span style="color:${color}">${getOverflowProb(bin.fill)}%</span></div>
-    <div class="pu-view" onclick="showMapDetail(getBin('${bin.id}')); highlightZone('${bin.id}')">VIEW DIGITAL TWIN →</div>`;
-}
-
-function getBin(id) { return BIN_DATA.find(b => b.id === id); }
-
-function refreshMarker(bin) {
-  if (!leafletMarkers[bin.id]) return;
-  leafletMarkers[bin.id].setIcon(makeMapIcon(bin));
-  leafletMarkers[bin.id].setPopupContent(makePopup(bin));
-}
-
-// ── Zone list ──
-function buildZoneList() {
-  const list = document.getElementById('zoneList');
-  list.innerHTML = '';
-  BIN_DATA.forEach(bin => {
-    const status = getMapStatus(bin.fill);
-    const color  = getMapColor(status);
-    const item   = document.createElement('div');
-    item.className = 'zone-item';
-    item.id = 'zi-' + bin.id;
-    item.innerHTML = `
-      <div class="zone-dot" style="background:${color}"></div>
-      <div class="zone-name">${bin.id} · ${bin.zone.toUpperCase()}</div>
-      ${bin.isLive ? '<span class="zone-live">LIVE</span>' : ''}
-      <div class="zone-fill" style="color:${color}">${bin.fill}%</div>
-    `;
-    item.addEventListener('click', () => {
-      leafletMap.setView([bin.lat, bin.lng], 13, { animate:true });
-      leafletMarkers[bin.id].openPopup();
-      showMapDetail(bin); highlightZone(bin.id);
-    });
-    list.appendChild(item);
-  });
-}
-
-function highlightZone(id) {
-  document.querySelectorAll('.zone-item').forEach(el => el.style.background = '');
-  const el = document.getElementById('zi-' + id);
-  if (el) el.style.background = 'rgba(0,229,255,0.05)';
-}
-
-// ── Stats bar ──
-function updateMapStats() {
-  let ok=0, warn=0, crit=0;
-  BIN_DATA.forEach(b => {
-    const s = getMapStatus(b.fill);
-    if (s==='normal') ok++; else if (s==='warning') warn++; else crit++;
-  });
-  document.getElementById('ms-ok').textContent   = ok;
-  document.getElementById('ms-warn').textContent  = warn;
-  document.getElementById('ms-crit').textContent  = crit;
-}
-
-// ── Detail panel ──
-function showMapDetail(bin) {
-  const status = getMapStatus(bin.fill);
-  const color  = getMapColor(status);
-  const prob   = getOverflowProb(bin.fill);
-  const pillStyle = status==='critical'
-    ? `color:#ff3355;border-color:#ff3355;background:rgba(255,51,85,0.08)`
-    : status==='warning'
-    ? `color:#ffcc00;border-color:#ffcc00;background:rgba(255,204,0,0.08)`
-    : `color:#00ff9d;border-color:#00ff9d;background:rgba(0,255,157,0.08)`;
-  const alertMsg = status==='critical'
-    ? `IMMEDIATE COLLECTION REQUIRED · ${bin.zone.toUpperCase()} OVERFLOW IMMINENT`
-    : status==='warning'
-    ? `SCHEDULE COLLECTION SOON · APPROACHING 80% THRESHOLD`
-    : `OPERATIONAL · NO ACTION REQUIRED`;
-  const alertStyle = status==='critical'
-    ? `color:#ff3355;border-color:#ff3355;background:rgba(255,51,85,0.06)`
-    : status==='warning'
-    ? `color:#ffcc00;border-color:#ffcc00;background:rgba(255,204,0,0.06)`
-    : `color:#00ff9d;border-color:#00ff9d;background:rgba(0,255,157,0.06)`;
-  const liveTag = bin.isLive ? `<span style="font-family:'Share Tech Mono',monospace;font-size:8px;color:#00e5ff;border:1px solid #00e5ff;padding:2px 6px;border-radius:2px;letter-spacing:1px;">LIVE SENSOR</span>` : '';
-
-  document.getElementById('mapEmpty').style.display  = 'none';
-  document.getElementById('mapDetail').style.display = 'block';
-  document.getElementById('mapBinTag').textContent   = bin.id + ' · ' + bin.zone.toUpperCase();
-
-  document.getElementById('mapDetail').innerHTML = `
-    <div class="mbin-hero">
-      <div class="mbin-id">${bin.id}</div>
-      <div class="mbin-pill" style="${pillStyle}">${status.toUpperCase()}</div>
-    </div>
-    ${liveTag ? `<div style="margin-bottom:12px;">${liveTag}</div>` : ''}
-
-    <div class="msec" style="margin-top:0">— FILL LEVEL · ${bin.fill}%</div>
-    <div class="mfill-track"><div class="mfill-fill" style="width:${bin.fill}%;background:${color};"></div></div>
-    <div class="mfill-labels"><span>0%</span><span style="color:${color}">${bin.fill}% NOW</span><span>100%</span></div>
-
-    <div class="msec">— OVERFLOW RISK · ${prob}%</div>
-    <div style="background:rgba(12,16,32,0.8);border:1px solid var(--border);border-radius:6px;padding:10px 12px;margin-bottom:12px;">
-      <div style="height:4px;background:rgba(99,202,255,0.08);border-radius:2px;overflow:hidden;margin-bottom:6px;">
-        <div style="height:100%;width:${prob}%;background:${color};border-radius:2px;transition:width 0.5s;"></div>
-      </div>
-      <div style="font-family:'Share Tech Mono',monospace;font-size:20px;color:${color};text-align:center;">${prob}%</div>
-      <div style="font-family:'Share Tech Mono',monospace;font-size:7px;letter-spacing:2px;color:var(--muted);text-align:center;margin-top:2px;">ML PREDICTED RISK</div>
-    </div>
-
-    <div class="mm-grid">
-      <div class="mm-card"><div class="mm-lbl">FILL LEVEL</div><div class="mm-val" style="color:${color}">${bin.fill}<span class="mm-unit">%</span></div></div>
-      <div class="mm-card"><div class="mm-lbl">FREE SPACE</div><div class="mm-val" style="color:var(--accent)">${freeSpace(bin.fill)}<span class="mm-unit">cm</span></div></div>
-      <div class="mm-card"><div class="mm-lbl">TEMPERATURE</div><div class="mm-val" style="color:${bin.temp>33?'#ffcc00':'var(--accent)'}">${bin.temp}<span class="mm-unit">°C</span></div></div>
-      <div class="mm-card"><div class="mm-lbl">HUMIDITY</div><div class="mm-val" style="color:var(--accent)">${bin.humidity}<span class="mm-unit">%</span></div></div>
-    </div>
-
-    <div class="msec">— BIN INFO</div>
-    <div class="minfo-table">
-      <div class="minfo-row"><span class="minfo-k">ZONE</span><span>${bin.zone.toUpperCase()}</span></div>
-      <div class="minfo-row"><span class="minfo-k">AREA TYPE</span><span>${bin.type.toUpperCase()}</span></div>
-      <div class="minfo-row"><span class="minfo-k">BIN HEIGHT</span><span>40 CM</span></div>
-      <div class="minfo-row"><span class="minfo-k">SENSOR</span><span>${bin.isLive ? 'ESP8266 + HC-SR04 · LIVE' : 'SIMULATED'}</span></div>
-      <div class="minfo-row"><span class="minfo-k">COLLECTION</span><span>06:00 DAILY</span></div>
-    </div>
-
-    <div class="msec">— SYSTEM ALERT</div>
-    <div class="malert-box" style="${alertStyle}">${alertMsg}</div>
-  `;
-}
-
-// ── Simulation engine — mirrors data_simulation.py logic ──
-function simulateTick() {
-  const now  = new Date();
-  const hour = now.getHours();
-  const isWeekend = now.getDay() === 0 || now.getDay() === 6;
-  const isPeak = hour >= 18 && hour <= 22;
-  const isCollectionHour = hour === 6 && now.getMinutes() < 1;
-
-  BIN_DATA.forEach(bin => {
-    if (bin.isLive) return; // skip B1 — live from Firebase
-
-    if (isCollectionHour) { bin.fill = 0; return; }
-
-    const base = (Math.random() * 2 + 1) * AREA_MULT[bin.type];
-    let increment = base;
-    if (isWeekend) increment *= 1.3;
-    if (isPeak)    increment *= 1.5;
-    if (Math.random() < 0.1) increment *= (1.5 + Math.random() * 0.5); // event spike
-
-    bin.fill = Math.min(100, +(bin.fill + increment).toFixed(1));
-
-    // drift temp & humidity slightly
-    bin.temp     = +Math.min(36, Math.max(28, bin.temp     + (Math.random()-0.5)*0.4)).toFixed(1);
-    bin.humidity = +Math.min(80, Math.max(50, bin.humidity + (Math.random()-0.5)*0.8)).toFixed(1);
-
-    refreshMarker(bin);
-  });
-
-  buildZoneList();
-  updateMapStats();
-
-  // if a bin is currently shown in detail, refresh it
-  const tag = document.getElementById('mapBinTag').textContent;
-  if (tag && tag !== 'SELECT A BIN') {
-    const id = tag.split(' ')[0];
-    const bin = getBin(id);
-    if (bin && document.getElementById('mapDetail').style.display !== 'none') showMapDetail(bin);
-  }
-}
-
-function startSimulation() {
-  setInterval(simulateTick, 30000); // every 30 seconds
-}
-
-// ── Sync B1 live data from Firebase to map ──
-function syncB1ToMap(pct, dist, temp, humidity) {
-  const b1 = getBin('B1');
-  if (!b1) return;
-  b1.fill     = pct;
-  b1.temp     = temp     || b1.temp;
-  b1.humidity = humidity || b1.humidity;
-  refreshMarker(b1);
-
-  // update zone list entry
-  const zi = document.getElementById('zi-B1');
-  if (zi) {
-    const color = getMapColor(getMapStatus(pct));
-    zi.querySelector('.zone-fill').textContent = pct + '%';
-    zi.querySelector('.zone-fill').style.color = color;
-    zi.querySelector('.zone-dot').style.background = color;
-  }
-  updateMapStats();
-
-  // if B1 is currently shown in detail panel, refresh it
-  const tag = document.getElementById('mapBinTag').textContent;
-  if (tag && tag.startsWith('B1')) showMapDetail(b1);
-}
-
+// ── Firebase listener ──
 function startFirebase() {
   const ref = db.ref('/dustbin');
   ref.on('value', snap => {
@@ -1434,15 +1071,200 @@ window.addEventListener('load', () => {
   drawGauge(0);
   startFirebase();
 
-  // Tab button listeners
-  document.getElementById('tabBtn0').addEventListener('click', () => switchTab('dashboard'));
-  document.getElementById('tabBtn1').addEventListener('click', () => switchTab('map'));
+  // Tab switching via addEventListener — no onclick needed
+  document.getElementById('tabBtn0').addEventListener('click', () => {
+    document.getElementById('tabBtn0').classList.add('active');
+    document.getElementById('tabBtn1').classList.remove('active');
+    document.getElementById('dashTab').style.display = 'block';
+    document.getElementById('mapTab').style.display = 'none';
+  });
+  document.getElementById('tabBtn1').addEventListener('click', () => {
+    document.getElementById('tabBtn1').classList.add('active');
+    document.getElementById('tabBtn0').classList.remove('active');
+    document.getElementById('dashTab').style.display = 'none';
+    document.getElementById('mapTab').style.display = 'block';
+    if (!mapInitialized) { initMap(); mapInitialized = true; }
+    else { leafletMap.invalidateSize(); }
+  });
 
-  // Hide loading after 2s regardless — map tab must be accessible without hardware
+  // Auto-hide loading after 2s
   setTimeout(() => {
     document.getElementById('loadingOverlay').classList.add('hidden');
   }, 2000);
 });
+
+// ══════════════════════════════════════════
+// MAP
+// ══════════════════════════════════════════
+let mapInitialized = false, leafletMap, leafletMarkers = {};
+
+const BINS = [
+  { id:'B1',  zone:'Adyar',          type:'residential', lat:13.0012, lng:80.2565, fill:3,  temp:31.2, hum:65, live:true  },
+  { id:'B2',  zone:'T.Nagar',        type:'commercial',  lat:13.0418, lng:80.2341, fill:58, temp:33.1, hum:62, live:false },
+  { id:'B3',  zone:'Anna Nagar',     type:'public',      lat:13.0878, lng:80.2089, fill:42, temp:30.8, hum:68, live:false },
+  { id:'B4',  zone:'Tambaram',       type:'residential', lat:12.9249, lng:80.1000, fill:21, temp:30.5, hum:70, live:false },
+  { id:'B5',  zone:'Velachery',      type:'commercial',  lat:12.9815, lng:80.2209, fill:74, temp:34.2, hum:58, live:false },
+  { id:'B6',  zone:'Mylapore',       type:'public',      lat:13.0336, lng:80.2677, fill:55, temp:31.9, hum:66, live:false },
+  { id:'B7',  zone:'Porur',          type:'residential', lat:13.0317, lng:80.1564, fill:18, temp:29.8, hum:72, live:false },
+  { id:'B8',  zone:'Perambur',       type:'commercial',  lat:13.1147, lng:80.2392, fill:82, temp:33.6, hum:61, live:false },
+  { id:'B9',  zone:'Guindy',         type:'public',      lat:13.0067, lng:80.2206, fill:38, temp:31.4, hum:64, live:false },
+  { id:'B10', zone:'Sholinganallur', type:'residential', lat:12.9010, lng:80.2279, fill:67, temp:32.0, hum:63, live:false },
+];
+const AMULT = { commercial:1.4, public:1.2, residential:1.0 };
+
+function mStatus(f) { return f>=80?'critical':f>=50?'warning':'normal'; }
+function mColor(s)  { return s==='critical'?'#ff3355':s==='warning'?'#ffcc00':'#00ff9d'; }
+function mProb(f)   { return f>=80?Math.min(99,Math.round(f*1.08)):f>=50?Math.round(28+(f-50)*1.3):Math.round(f*0.35); }
+function mFree(f)   { return ((1-f/100)*40).toFixed(1); }
+function getBin(id) { return BINS.find(b=>b.id===id); }
+
+function makeIcon(bin) {
+  const s=mStatus(bin.fill), c=mColor(s);
+  const pulse = s==='critical'
+    ? `<circle cx="16" cy="16" r="14" fill="none" stroke="${c}" stroke-width="1" opacity="0.4"><animate attributeName="r" from="10" to="22" dur="1.4s" repeatCount="indefinite"/><animate attributeName="opacity" from="0.5" to="0" dur="1.4s" repeatCount="indefinite"/></circle>` : '';
+  const ring = bin.live ? `<circle cx="16" cy="16" r="11" fill="none" stroke="#00e5ff" stroke-width="1.5" stroke-dasharray="3,2"/>` : '';
+  return L.divIcon({
+    html:`<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">${pulse}${ring}<circle cx="16" cy="16" r="10" fill="${c}" opacity="0.15"/><circle cx="16" cy="16" r="6" fill="${c}"/></svg>`,
+    className:'', iconSize:[32,32], iconAnchor:[16,16], popupAnchor:[0,-18]
+  });
+}
+
+function makePopup(bin) {
+  const s=mStatus(bin.fill), c=mColor(s);
+  const lv = bin.live?` <span style="color:#00e5ff;font-size:7px;border:1px solid #00e5ff;padding:1px 4px;">LIVE</span>`:'';
+  return `<div class="put" style="color:${c}">${bin.id} · ${bin.zone.toUpperCase()}${lv}</div>
+    <div class="pur"><span class="puk">FILL</span><span style="color:${c}">${bin.fill}%</span></div>
+    <div class="pur"><span class="puk">STATUS</span><span style="color:${c}">${s.toUpperCase()}</span></div>
+    <div class="pur"><span class="puk">TYPE</span><span>${bin.type.toUpperCase()}</span></div>
+    <div class="pur"><span class="puk">OVERFLOW RISK</span><span style="color:${c}">${mProb(bin.fill)}%</span></div>
+    <div class="pvw" id="pvw-${bin.id}">VIEW DIGITAL TWIN →</div>`;
+}
+
+function initMap() {
+  leafletMap = L.map('mapView', { center:[13.0287,80.2107], zoom:11, attributionControl:false });
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom:19 }).addTo(leafletMap);
+  BINS.forEach(bin => {
+    const m = L.marker([bin.lat,bin.lng], { icon:makeIcon(bin) }).addTo(leafletMap);
+    m.bindPopup(makePopup(bin), { maxWidth:220 });
+    m.on('click', () => { showDetail(bin); hlZone(bin.id); });
+    m.on('popupopen', () => {
+      setTimeout(() => {
+        const el = document.getElementById('pvw-'+bin.id);
+        if (el) el.addEventListener('click', () => { showDetail(bin); hlZone(bin.id); });
+      }, 100);
+    });
+    leafletMarkers[bin.id] = m;
+  });
+  buildZoneList();
+  updateStats();
+  setInterval(simTick, 30000);
+}
+
+function buildZoneList() {
+  const list = document.getElementById('zoneList');
+  list.innerHTML = '';
+  BINS.forEach(bin => {
+    const s=mStatus(bin.fill), c=mColor(s);
+    const el = document.createElement('div');
+    el.className = 'zitem'; el.id = 'zi-'+bin.id;
+    el.innerHTML = `<div class="zdot" style="background:${c}"></div><div class="zname">${bin.id} · ${bin.zone.toUpperCase()}</div>${bin.live?'<span class="zlive">LIVE</span>':''}<div class="zfill" style="color:${c}">${bin.fill}%</div>`;
+    el.addEventListener('click', () => { leafletMap.setView([bin.lat,bin.lng],13,{animate:true}); leafletMarkers[bin.id].openPopup(); showDetail(bin); hlZone(bin.id); });
+    list.appendChild(el);
+  });
+}
+
+function hlZone(id) {
+  document.querySelectorAll('.zitem').forEach(e => e.style.background='');
+  const el = document.getElementById('zi-'+id);
+  if (el) el.style.background = 'rgba(0,229,255,0.05)';
+}
+
+function updateStats() {
+  let ok=0,warn=0,crit=0;
+  BINS.forEach(b => { const s=mStatus(b.fill); if(s==='normal')ok++; else if(s==='warning')warn++; else crit++; });
+  document.getElementById('msOk').textContent   = ok;
+  document.getElementById('msWarn').textContent = warn;
+  document.getElementById('msCrit').textContent = crit;
+}
+
+function showDetail(bin) {
+  const s=mStatus(bin.fill), c=mColor(s), prob=mProb(bin.fill);
+  const pillSt = s==='critical'?`color:#ff3355;border-color:#ff3355;background:rgba(255,51,85,0.08)`:s==='warning'?`color:#ffcc00;border-color:#ffcc00;background:rgba(255,204,0,0.08)`:`color:#00ff9d;border-color:#00ff9d;background:rgba(0,255,157,0.08)`;
+  const alertSt = s==='critical'?`color:#ff3355;border-color:#ff3355;background:rgba(255,51,85,0.06)`:s==='warning'?`color:#ffcc00;border-color:#ffcc00;background:rgba(255,204,0,0.06)`:`color:#00ff9d;border-color:#00ff9d;background:rgba(0,255,157,0.06)`;
+  const alertMsg = s==='critical'?`IMMEDIATE COLLECTION REQUIRED · ${bin.zone.toUpperCase()} OVERFLOW IMMINENT`:s==='warning'?`SCHEDULE COLLECTION · APPROACHING 80% THRESHOLD`:`OPERATIONAL · NO ACTION REQUIRED`;
+  document.getElementById('mEmpty').style.display  = 'none';
+  document.getElementById('mDetail').style.display = 'block';
+  document.getElementById('mBinTag').textContent   = bin.id+' · '+bin.zone.toUpperCase();
+  document.getElementById('mDetail').innerHTML = `
+    <div class="mhero"><div class="mhero-id">${bin.id}</div><div class="mpill" style="${pillSt}">${s.toUpperCase()}</div></div>
+    ${bin.live?`<div style="margin-bottom:10px;"><span style="font-family:'Share Tech Mono',monospace;font-size:8px;color:#00e5ff;border:1px solid #00e5ff;padding:2px 8px;border-radius:2px;letter-spacing:1px;">LIVE SENSOR · ESP8266</span></div>`:''}
+    <div class="msec" style="margin-top:0;">— FILL LEVEL · ${bin.fill}%</div>
+    <div class="mtrack"><div class="mfill" style="width:${bin.fill}%;background:${c};"></div></div>
+    <div class="mlbls"><span>0%</span><span style="color:${c}">${bin.fill}%</span><span>100%</span></div>
+    <div class="msec">— OVERFLOW RISK · ${prob}%</div>
+    <div style="background:rgba(12,16,32,0.8);border:1px solid var(--border);border-radius:6px;padding:10px 12px;margin-bottom:12px;">
+      <div style="height:4px;background:rgba(99,202,255,0.08);border-radius:2px;overflow:hidden;margin-bottom:6px;"><div style="height:100%;width:${prob}%;background:${c};border-radius:2px;"></div></div>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:20px;color:${c};text-align:center;">${prob}%</div>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:7px;letter-spacing:2px;color:var(--muted);text-align:center;margin-top:2px;">ML PREDICTED RISK</div>
+    </div>
+    <div class="mgrid">
+      <div class="mcard"><div class="mclbl">FILL LEVEL</div><div class="mcval" style="color:${c}">${bin.fill}<span class="mcunit">%</span></div></div>
+      <div class="mcard"><div class="mclbl">FREE SPACE</div><div class="mcval" style="color:var(--accent)">${mFree(bin.fill)}<span class="mcunit">cm</span></div></div>
+      <div class="mcard"><div class="mclbl">TEMPERATURE</div><div class="mcval" style="color:${bin.temp>33?'#ffcc00':'var(--accent)'}">${bin.temp}<span class="mcunit">°C</span></div></div>
+      <div class="mcard"><div class="mclbl">HUMIDITY</div><div class="mcval" style="color:var(--accent)">${bin.hum}<span class="mcunit">%</span></div></div>
+    </div>
+    <div class="msec">— BIN INFO</div>
+    <div class="mitable">
+      <div class="mirow"><span class="mik">ZONE</span><span>${bin.zone.toUpperCase()}</span></div>
+      <div class="mirow"><span class="mik">AREA TYPE</span><span>${bin.type.toUpperCase()}</span></div>
+      <div class="mirow"><span class="mik">BIN HEIGHT</span><span>40 CM</span></div>
+      <div class="mirow"><span class="mik">SENSOR</span><span>${bin.live?'ESP8266 + HC-SR04 · LIVE':'SIMULATED'}</span></div>
+    </div>
+    <div class="msec">— SYSTEM ALERT</div>
+    <div class="malert" style="${alertSt}">${alertMsg}</div>`;
+}
+
+function simTick() {
+  const now=new Date(), h=now.getHours();
+  const isWE = now.getDay()===0||now.getDay()===6;
+  const isPk = h>=18&&h<=22;
+  BINS.forEach(bin => {
+    if (bin.live) return;
+    let inc = (Math.random()*2+1)*AMULT[bin.type];
+    if (isWE) inc*=1.3;
+    if (isPk) inc*=1.5;
+    if (Math.random()<0.1) inc*=(1.5+Math.random()*0.5);
+    bin.fill = Math.min(100, +(bin.fill+inc).toFixed(1));
+    if (h===6) bin.fill = 0;
+    bin.temp = +Math.min(36,Math.max(28,bin.temp+(Math.random()-0.5)*0.4)).toFixed(1);
+    bin.hum  = +Math.min(80,Math.max(50,bin.hum +(Math.random()-0.5)*0.8)).toFixed(1);
+    leafletMarkers[bin.id].setIcon(makeIcon(bin));
+    leafletMarkers[bin.id].setPopupContent(makePopup(bin));
+    const zi = document.getElementById('zi-'+bin.id);
+    if (zi) { const c=mColor(mStatus(bin.fill)); zi.querySelector('.zfill').textContent=bin.fill+'%'; zi.querySelector('.zfill').style.color=c; zi.querySelector('.zdot').style.background=c; }
+  });
+  updateStats();
+  const tag = document.getElementById('mBinTag').textContent;
+  if (tag && tag!=='SELECT A BIN') { const id=tag.split(' ')[0]; const bin=getBin(id); if(bin&&document.getElementById('mDetail').style.display!=='none') showDetail(bin); }
+}
+
+// Sync B1 live Firebase data to map
+function syncB1(pct, temp, hum) {
+  const b1 = getBin('B1');
+  if (!b1) return;
+  b1.fill = pct;
+  if (temp) b1.temp = temp;
+  if (hum)  b1.hum  = hum;
+  if (!mapInitialized) return;
+  leafletMarkers['B1'].setIcon(makeIcon(b1));
+  leafletMarkers['B1'].setPopupContent(makePopup(b1));
+  const zi = document.getElementById('zi-B1');
+  if (zi) { const c=mColor(mStatus(pct)); zi.querySelector('.zfill').textContent=pct+'%'; zi.querySelector('.zfill').style.color=c; zi.querySelector('.zdot').style.background=c; }
+  updateStats();
+  const tag = document.getElementById('mBinTag').textContent;
+  if (tag && tag.startsWith('B1') && document.getElementById('mDetail').style.display!=='none') showDetail(b1);
+}
+
 </script>
 </body>
 </html>
